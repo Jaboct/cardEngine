@@ -1,0 +1,76 @@
+# I added this shit
+# I essentially only want shaders from /res/.
+*~
+*res/images/
+*res/model/
+*old/
+*.png
+*.bmp
+res/worlds/new/*
+
+# jHigh stuff
+/jh/diff_backbone.c
+/jh/diff_backbone.h
+/jh/diff_backbone_out
+/jh/diff_class.c
+/jh/diff_class_out
+/jh/diff_head.h
+/jh/diff_head_out
+
+#cmake
+cmake_build/*
+LLVM_build/*
+
+# Prerequisites
+*.d
+*.d.*
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf

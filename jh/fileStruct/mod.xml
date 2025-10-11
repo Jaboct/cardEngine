@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileStruct>
+  <name>mod</name>
+  <colors>1</colors>
+  <getters>1</getters>
+  <modFuncts>0</modFuncts>
+  <typeValFuncts>0</typeValFuncts>
+  <drawCutString>0</drawCutString>
+  <scrollHandle>0</scrollHandle>
+  <preInc></preInc>
+  <postInc></postInc>
+  <structIds>
+  </structIds>
+  <functIds>
+  </functIds>
+  <varIds>
+  </varIds>
+</fileStruct>

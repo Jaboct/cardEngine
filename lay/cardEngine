@@ -1,0 +1,127 @@
+
+Append:
+lay/layoutFile_default
+
+
+Lib:
+cardEngine	cardEngine
+
+
+Append:
+lay/ui/uiGen_default
+
+
+Dims:
+//3000, 2048
+//2048, 2048
+//2400, 1600
+1200, 800
+
+
+
+LayLib:
+menu	menu	layEleInit	layEleRender	layEleEvent	layEleClose
+cardEngine	solitaire	solitaire_init	solitaire_render	solitaire_event	solitaire_close	solitaire_number
+
+
+LayLib:
+layoutUi	canvasEleEdit	canvasEleInitEdit	canvasEleRenderEdit	canvasEleEventEdit	canvasEleCloseEdit	canvasEleEditNumber
+
+
+
+
+Lib:
+loop	jalbLoop
+// Loop _has_ to be last.
+
+
+Setter:
+loop	getSetStage	menu	setSetStage
+
+
+Name:
+jHigh/testEnv/ ( jHigh_cardEngine )
+
+
+JLUI:
+canvas
+renderAlways
+
+
+/// Main  Menu Stage (0)
+Loop:
+layoutUi	render	event
+
+
+Lay:
+cent	400	400
+  menu
+
+
+Menu:
+menu	buttonRender12	buttonEvent12	1
+
+
+MenuList:
+Singleplayer	1
+Multiplayer	2
+Mods	3
+Settings	0
+Quit	-1
+
+
+Setter:
+layoutUi	takeTop	loop	setLastStageData
+
+
+/// jMade Stage (1)
+Loop:
+layoutUi	render	event
+
+
+Lay:
+solitaire
+
+
+
+Hotkey:
+cardEngine	1	hand_stru_00
+vText	2	hand_load_abs
+vText	3	hand_load_line
+vText	4	hand_load_line_01
+
+
+Append:
+lay/ui/uiGen_hotkey
+
+
+Setter:
+layoutUi	takeTop	loop	setLastStageData
+
+
+Ctrl:
+" \n\t.,/\\<>{}[]():;\"\'|_-+=~`!@#$%^&*?"
+
+
+
+Setter:
+draw2d	getFunctWrap	cardEngine	setDraw2dApi
+//draw3d	getFunctWrap	cardEngine	setDraw3dApi	// draw3d	jalbDraw3dWrap
+font	getFontFirst	cardEngine	setFont16
+
+Getter:
+layoutUi	addCanvasEle	cardEngine	setAddCanvas
+
+
+
+
+#Debug:
+all
+
+
+
+Run:
+cardEngine	fill_stock
+
+
+

@@ -1,0 +1,98 @@
+
+
+/// for LayLib:
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <jalbDraw/jalb_draw2d_api.h>
+
+// extern struct draw2dStruct *draw2dApi;
+// extern struct jalbFont *fonts[];
+/*
+extern float colorWhite[];
+extern float colorGray[];
+extern float colorDGray[];
+extern float colorDGray1[];
+extern float colorDGray2[];
+extern float colorBlack[];
+extern float colorGold[];
+extern float colorOrange[];
+*/
+
+/** Functions */
+// MODNAME	NICKNAME	RENAME_init	RENAME_render	RENAME_event	RENAME_close	RENAME_number
+int RENAME_id = -1;
+
+void *RENAME_init ( ) {
+	return NULL;
+}
+
+void RENAME_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *data ) {
+	printf ( "RENAME_render ( )\n" );
+	draw2dApi->fillRect ( XYWHpass, colorBlack, screenDims, glBuffers );
+
+	draw2dApi->drawCharPre ( fonts[0], colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWHpass, fonts[0], "RENAME_render ( )" );
+}
+
+int RENAME_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
+	if ( e->type == SDL_QUIT ) {
+	} else if ( e->type == SDL_KEYDOWN ) {
+//		if ( e->key.keysym.sym == SDLK_1 ) {
+//		}
+	} else if ( e->type == SDL_KEYUP ) {
+	} else if ( e->type == SDL_MOUSEBUTTONDOWN ) {
+//		if ( e->button.button == SDL_BUTTON_LEFT ) {
+//			e->button.x, or clickXY[0]
+//		} else if ( e->button.button == SDL_BUTTON_RIGHT ) {
+//		}
+	} else if ( e->type == SDL_MOUSEBUTTONUP ) {
+	} else if ( e->type == SDL_MOUSEMOTION ) {
+	} else if ( e->type == SDL_MOUSEWHEEL ) {
+	}
+
+	return 0;
+}
+
+void RENAME_close ( char *data ) {
+}
+
+void RENAME_number ( int id ) {
+	RENAME_id = id;
+}
+
+
+
+
+----------------------------------------------
+Header
+----------------------------------------------
+
+
+
+#pragma once
+
+#include <SDL2/SDL.h>
+#include <GL/glew.h>
+#include <GL/gl.h>
+
+/** Functions */
+
+void *RENAME_init ( );
+void RENAME_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *data );
+int RENAME_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data );
+void RENAME_close ( char *data );
+void RENAME_number ( int id );
+
+
+
+
+
+
+
+
+
+

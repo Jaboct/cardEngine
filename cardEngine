@@ -1,0 +1,88 @@
+
+Append:
+lay/jh/std/jHighLayx8_new
+
+
+Name:
+jHigh-IDE [cardEngine]
+
+
+Button:
+0	1	C:\Users\jacob\workspace\jHigh\testEnv/modCore lay\jHigh_cardEngine
+#1	1	mingw32-make -C /home/jadeb/workspace/jHigh\cardEngine\ CompType=win
+#1	1	mingw32-make -C /home/jadeb/workspace/jHigh\cardEngine\ clean CompType=win
+1	1	make -C /home/jadeb/workspace/jHigh/cardEngine/
+1	1	make -C /home/jadeb/workspace/jHigh/cardEngine/ clean
+0	1	/home/jadeb/workspace/jHigh\testEnv/modCore lay\jHigh_cardEngine
+#1	1	/home/jadeb/workspace/jHigh\cardEngine\soSend.bat
+1	1	/home/jadeb/workspace/jHigh/cardEngine/soSend.sh
+1	1	/home/jadeb/workspace/jHigh\cardEngine\compSend.bat
+
+
+Dir:
+/home/jadeb/workspace/jHigh/cardEngine/src/
+/home/jadeb/workspace/jHigh/cardEngine/include/
+/home/jadeb/workspace/jHigh/cardEngine/
+/home/jadeb/workspace/jHigh/testEnv/lay/
+MODCORE_DIR
+
+
+Text:
+/home/jadeb/workspace/jHigh/cardEngine/makefile
+/home/jadeb/workspace/jHigh/cardEngine/src/mod.c
+/home/jadeb/workspace/jHigh/cardEngine/include/mod.h
+
+
+jHighLoad:
+// 0 is structStruct, 1 is fileStruct, 2 is a script which can contain either one.
+//0	C:\Users\jacob\workspace\freight\jHigh/res\saves\xml\structStruct/structStruct.xml
+//2	C:\Users\jacob\workspace\jHigh\res\xmlGroup_jHigh
+
+
+
+
+// uiGen stuff
+
+LayLib:
+uiGen	uiGen	uiGenInit	uiGen_render	uiGen_event	uiGenClose 	set_uiGen_id
+uiGen	uiGenEdit	uiGenInitEdit	uiGenRenderEdit	uiGenEventEdit	uiGenCloseEdit	uiGenEditNumber
+
+Getter:
+layoutUi	addCanvasEle	uiGen	setAddCanvas
+
+Setter:
+draw2d	getFunctWrap	uiGen	setDraw2dApi
+font	getFontFirst	uiGen	setFont16
+
+Run:
+uiGen	assemble_appendMod_full_list
+
+
+
+
+Hotkey:
+tool	1	pressButtonI	3
+#jHigh	u	generate_structList_uiGen
+
+
+Setter:
+layoutUi	takeTop	loop	setLastStageData
+
+
+jHighXmlGroup:
+#/home/jadeb/workspace/jHigh\cardEngine\jh\_xmlGroup
+/home/jadeb/workspace/jHigh/cardEngine/jh/_xmlGroup
+
+
+Run:
+#jHigh	link_cardEngine
+#uiGen	assemble_appendMod_full_list
+jHigh	set_reSave_xmlGroup	1
+
+
+
+
+
+
+
+

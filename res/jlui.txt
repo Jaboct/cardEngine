@@ -1,0 +1,24 @@
+
+#include <SDL2/SDL.h>
+#include <GL/glew.h>
+
+
+// mod	ele_jlui	ele_init	ele_render	ele_event	ele_close	ele_number
+int ele_jluiId = -1;
+
+struct ele *ele_init ( ) {
+}
+
+void ele_close ( struct ele *var ) {
+}
+
+void ele_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *data ) {
+}
+
+int ele_event ( SDL_Event *e, int *clickXYpass, int *eleWH, void *data ) {
+}
+
+void ele_number ( int id ) {
+	ele_jluiId = id;
+}
+

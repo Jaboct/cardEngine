@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modStruct>
+  <modName>cardEngine</modName>
+  <structIds>
+    0,
+  </structIds>
+  <fileIds>
+    0,
+    1,
+    2,
+  </fileIds>
+  <functIds>
+  </functIds>
+  <scriptIds>
+  </scriptIds>
+  <projectVarIds>
+    0,
+  </projectVarIds>
+</modStruct>
