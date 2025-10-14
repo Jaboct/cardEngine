@@ -22,6 +22,7 @@ Dims:
 LayLib:
 menu	menu	layEleInit	layEleRender	layEleEvent	layEleClose
 cardEngine	solitaire	solitaire_init	solitaire_render	solitaire_event	solitaire_close	solitaire_number
+cardEngine	oasis	oasis_init	oasis_render	oasis_event	oasis_close	oasis_number
 
 
 LayLib:
@@ -86,9 +87,6 @@ solitaire
 
 Hotkey:
 cardEngine	1	hand_stru_00
-vText	2	hand_load_abs
-vText	3	hand_load_line
-vText	4	hand_load_line_01
 
 
 Append:
@@ -97,6 +95,32 @@ lay/ui/uiGen_hotkey
 
 Setter:
 layoutUi	takeTop	loop	setLastStageData
+
+
+
+/// jMade Stage (2) Oasis
+Loop:
+layoutUi	render	event
+
+
+Lay:
+oasis
+
+
+
+Hotkey:
+cardEngine	1	turn_change
+
+
+Append:
+lay/ui/uiGen_hotkey
+
+
+Setter:
+layoutUi	takeTop	loop	setLastStageData
+
+
+/// End of stage (2)
 
 
 Ctrl:
@@ -121,6 +145,7 @@ all
 
 
 Run:
+loop	setStage	2
 cardEngine	fill_stock
 
 

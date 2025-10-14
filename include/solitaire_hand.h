@@ -36,7 +36,6 @@ void fill_stock ( );
 void solitair_render_full ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *data );
 
 void center_text ( int pass[4], int ret[4], struct jalbFont *font, int strl );
-int inBox ( int XY[], int XYWH[] );
 int solitaire_game_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data );
 
 // return the card index of the cursor

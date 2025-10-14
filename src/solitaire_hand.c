@@ -1,8 +1,11 @@
 #include "solitaire_hand.h"
 
+
 /** Includes */
 
 #include <jalbDraw/jalb_draw2d_api.h>
+
+#include "card_util.h"
 
 
 /** Variables */
@@ -21,7 +24,8 @@ extern float colorGold[];
 extern float colorOrange[];
 
 float colorDGreen[4] = { 0.1, 0.5, 0.1, 1.0 };
-float colorDRed[4] = { 0.9, 0.5, 0.5, 1.0 };
+float colorLRed[4] = { 0.9, 0.5, 0.5, 1.0 };
+
 
 /** Functions */
 
@@ -451,7 +455,7 @@ void solitair_render_full ( int *screenDims, GLuint *glBuffers, int *XYWHpass, v
 	cardXYWH[0] = XYWHpass[0] + 40 + cardW + 100;
 	cardXYWH[1] = XYWHpass[1] + 40 + 500;
 
-	printf ( "solitair_cursor: %d\n", solitair_cursor );
+//	printf ( "solitair_cursor: %d\n", solitair_cursor );
 
 	i = 0;
 	while ( i < 4 ) {
@@ -527,16 +531,6 @@ DOM
 { 40, 40 + cwardW + 100, cardW, cardH + 20 * 6, 1 }	// 1, the hand
 */
 
-int inBox ( int XY[], int XYWH[] ) {
-	if ( XY[0] > XYWH[0] &&
-	     XY[0] < XYWH[0] + XYWH[2] ) {
-		if ( XY[1] > XYWH[1] &&
-		     XY[1] < XYWH[1] + XYWH[3] ) {
-			return 1;
-		}
-	}
-	return 0;
-}
 
 
 int solitaire_game_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
@@ -1096,7 +1090,7 @@ void card_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, int n, int
 	if ( s % 2 == 0 ) {
 		draw2dApi->fillRect ( XYWHpass, colorGray, screenDims, glBuffers );
 	} else {
-		draw2dApi->fillRect ( XYWHpass, colorDRed, screenDims, glBuffers );
+		draw2dApi->fillRect ( XYWHpass, colorLRed, screenDims, glBuffers );
 	}
 
 	char *suite = suite_to_string ( s );
