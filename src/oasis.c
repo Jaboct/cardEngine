@@ -55,6 +55,8 @@ void cardFill ( struct card *var ) {
 	var->attack = 0;
 	var->health = 0;
 	var->mana = 0;
+
+	var->mods = initArrayList ( 10, sizeof ( void* ), 10 );
 }
 
 void *cardInitMask ( ) {

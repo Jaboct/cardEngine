@@ -15,8 +15,10 @@ Dims:
 //3000, 2048
 //2048, 2048
 //2400, 1600
-1200, 800
-
+// Decent for solitaire
+//1200, 800
+// Oasis
+1200, 1000
 
 
 LayLib:
@@ -110,7 +112,7 @@ oasis
 
 Hotkey:
 cardEngine	1	turn_change
-
+cardEngine	2	set_oasis_stage	4
 
 Append:
 lay/ui/uiGen_hotkey
@@ -147,6 +149,6 @@ all
 Run:
 loop	setStage	2
 cardEngine	fill_stock
-
+#cardEngine	set_debugPrint_oasisRender	1
 
 

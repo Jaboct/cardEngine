@@ -1,5 +1,6 @@
 #pragma once
 
+
 /** Includes */
 
 #include <SDL2/SDL.h>
@@ -9,19 +10,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <time.h>
+
 #include <jalbDraw/jalb_draw2d_api.h>
+
+
+/** Forward Declaring */
+
+struct card;
+struct cardMod;
+
 
 /** Structs */
 
 struct player {
 	ArrayList *deck;	// (struct card*)
+	ArrayList *deckTotal;	// (struct card*)
+
 	struct card *hand[10];
 	struct card *board[7];
 	int health;
 
 	int mana;
 	int manaMax;
+
+	int fatigue;
 };
+
+struct pick3 {
+	char name[256];
+	int cards[3];
+};
+
+
+#define HAND_MAX 10
+#define BOARD_MAX 7
+#define MANA_MAX 10
+
 
 
 
@@ -42,57 +67,38 @@ void hand_make_cards ( );
 
 // adds to the base list, but also returns card so you can edit it afterwards.
 struct cardBase *make_card ( int mana, int atk, int hp, char *name );
+struct cardBase *make_cardBase_spell ( char *name );
 
 void copyCard_id ( ArrayList *list, int id );
 struct card *copyCard_base ( int id );
+struct card *copyCard ( struct card *card );
+
+struct cardMod *cardMod_copy ( struct cardMod *copy );
 
 
-/// Render
-
-void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *data );
-void render_board ( int *screenDims, GLuint *glBuffers, struct player *player, int *XY, int cursor );
-void render_hand ( int *screenDims, GLuint *glBuffers, struct player *player, int *XY, int cursor );
-
-void card_render_highlight ( int *screenDims, GLuint *glBuffers, int *XYWHpass );
-void oasis_card_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, struct card *card );
-
-
-/// Event
-
-int oasis_game_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data );
-
-// doesnt simply return the index, it also makes sure a minion exists there.
-int board_click_index ( struct player *player, int *clickXY, int *boardXYWH );
-
-// for for the player only.
-void play_hand_to_board ( struct player *player, int handI );
-
-
-/// Other
-
-// i am removing card at arr[i], so shift everything at an index above that, left by 1.
-// make sure the final arr[index] is set to null.
-void shrink_array ( struct card *arr[], int i, int max );
-
-void card_attack ( struct player *attacker, struct player *defender, int attackIndex, int defendIndex );
 
 void turn_change ( );
 
+void startTurn_player ( struct player *player );
+
+void shuffle_to ( ArrayList *deck, ArrayList *deckTotal );
+void player_damage ( struct player *player, int dmg );
+
 void enemy_ai ( struct player *player );
 
-void draw_player ( struct player *player );
+int draw_player ( struct player *player );
 void mana_increment ( struct player *player );
-
-
-/// Utilities
-
-// render
-
-int centerX ( int x, int w, int glyphW, int numChars );
 
 
 // game
 
 int get_hand_len ( struct player *player );
 int get_board_len ( struct player *player );
+
+
+
+char *mod_to_str ( struct cardMod *mod );
+
+
+
 

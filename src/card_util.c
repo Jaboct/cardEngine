@@ -23,6 +23,20 @@ int inBox ( int XY[], int XYWH[] ) {
 
 
 
+/// Utilities
+
+// render
+
+int centerX ( int x, int w, int glyphW, int numChars ) {
+	int pos = x + (w / 2) - (numChars * glyphW) / 2;
+
+	return pos;
+}
+
+int centerX_px ( int x, int wTot, int wObj ) {
+	return x + (wTot - wObj) / 2;
+}
+
 
 
 

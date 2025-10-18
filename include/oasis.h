@@ -23,24 +23,92 @@ void oasis_preInit ( );
 
 /** Structs */
 
+
+struct spell {
+	int type;
+	struct targeting *tar;
+	struct spellEffect *eff;
+};
+
+struct spellEffect {
+	int type;
+	int heal;
+	int dmg;
+	ArrayList *mods;	// ( struct cardMod*)
+};
+
+
 struct card {
 	int id;
-	int attack;
-	int health;
 	int mana;
+
+	int type;
+	union {
+		struct {
+			int attack;
+			int health;
+			ArrayList *mods;
+			int numAttacks;
+		};
+		struct spell *spell;
+	};
 };
 
 struct cardBase {
 	int id;
+
 	char name[256];
-	int attack;
-	int health;
-	ArrayList *modifiers;	// (struct cardMod*)
 	int mana;
+
+	int type;
+	union {
+		struct {
+			int attack;
+			int health;
+			ArrayList *modifiers;	// (struct cardMod*)
+		};
+		struct spell *spell;
+	};
 };
 
 struct cardMod {
+	int type;
+	// 0 taunt
+	// 1 heal?
+	// 2 damage?
 };
+
+
+
+
+
+
+struct minionBase {
+	int attack;
+	int health;
+	ArrayList *mods;
+
+	int numAttacks;	// -1 if i just played the card this turn.
+			// -2 is not played yet (in hand)
+			// at the start of each turn iterate through and set to 0.
+			// then i need to stop attacking at 1 normally, 2 windfury, etc.
+			// actually i think i want this to be the number of remaining attacks
+};
+
+struct cardB {
+	int id;
+
+	char name[256];
+	int mana;
+
+	int type;
+	union {
+		struct minionBase *minion;
+		struct spell *spell;
+	};
+};
+
+
 
 
 

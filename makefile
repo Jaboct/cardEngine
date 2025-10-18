@@ -63,7 +63,7 @@ cardEngineFiles = \
  mod \
  card_util \
  solitaire solitaire_hand \
- oasis oasis_hand
+ oasis oasis_hand oasis_render oasis_event
 
 # can i make these 2 generic, so i dont need to copy paste it for each mod.
 # backbone_cardEngine xmlFunctGrouper_cardEngine
