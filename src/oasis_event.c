@@ -11,8 +11,8 @@
 /** Variables */
 
 
-extern struct player *player;
-extern struct player *enemy;
+//extern struct player *player;
+//extern struct player *enemy;
 
 
 extern int oasis_cursor;
@@ -44,10 +44,19 @@ extern int playerBoardXY[];
 extern int enemyBoardXY[];
 
 
+extern struct oasis_game *glob_oasis;
+
+
 /** Functions */
 
 int oasis_game_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
 	printf ( "oasis_game_event ( )\n" );
+
+
+	struct oasis_game *game = glob_oasis;
+	struct player *player = game->player;
+	struct player *enemy = game->enemy;
+
 
 	// check if u clicked in the hand.
 
@@ -165,7 +174,7 @@ sayIntArray ( "cardXYWH", cardXYWH, 4 );
 
 			struct card *attackCard = player->board[attackIndex];
 
-			enemy->health -= attackCard->attack;
+			enemy->health -= attackCard->minion->attack;
 		}
 	}
 
@@ -226,7 +235,7 @@ void play_hand_to_board ( struct player *player, int handI ) {
 	if ( handCard->type == 0 ) {
 		player->mana -= handCard->mana;
 		player->board[boardLen] = player->hand[handI];
-		player->board[boardLen]->numAttacks = -1;	// -1 means sleeping cuz it was just played
+		player->board[boardLen]->minion->numAttacks = -1;	// -1 means sleeping cuz it was just played
 	} else if ( handCard->type == 1 ) {
 		// spell.
 		// TODO, figure which minion i apply this to.
@@ -243,12 +252,12 @@ void play_hand_to_board ( struct player *player, int handI ) {
 }
 
 void apply_spell_minion ( struct card *spell, struct card *minion ) {
-	minion->health += 2;
+	minion->minion->health += 2;
 
 	// TODO handle spell better
 	struct cardMod *mod = malloc ( sizeof ( *mod ) );
 	mod->type = 1;
-	arrayListAddEndPointer ( minion->mods, mod );
+	arrayListAddEndPointer ( minion->minion->mods, mod );
 }
 
 
@@ -273,20 +282,24 @@ void card_attack ( struct player *attacker, struct player *defender, int attackI
 	struct card *attackCard = attacker->board[attackIndex];
 	struct card *defendCard = defender->board[defendIndex];
 
-	if ( attackCard->numAttacks > 0 ) {
-		attackCard->numAttacks -= 1;
+	struct minionBase *atkMinion = attackCard->minion;
+	struct minionBase *defMinion = defendCard->minion;
+
+	// todo, do i need to make sure attackCard->type == minion? one day im sure
+	if ( atkMinion->numAttacks > 0 ) {
+		atkMinion->numAttacks -= 1;
 	} else {
 		return;
 	}
 
 	// TODO, check for poison, lifesteal, sheild, etc.
-	attackCard->health -= defendCard->attack;
-	defendCard->health -= attackCard->attack;
+	atkMinion->health -= defMinion->attack;
+	defMinion->health -= atkMinion->attack;
 
-	if ( attackCard->health <= 0 ) {
+	if ( atkMinion->health <= 0 ) {
 		shrink_array ( attacker->board, attackIndex, BOARD_MAX );
 	}
-	if ( defendCard->health <= 0 ) {
+	if ( defMinion->health <= 0 ) {
 		shrink_array ( defender->board, defendIndex, BOARD_MAX );
 	}
 }

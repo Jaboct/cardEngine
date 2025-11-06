@@ -35,6 +35,8 @@ void set_debugPrint_oasisRender ( int i );
 
 /// Render
 
+void oasis_assemble_dom ( int *XYWHpass );
+
 void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *data );
 void render_character ( int *screenDims, GLuint *glBuffers, struct player *player, int *XY );
 void render_board ( int *screenDims, GLuint *glBuffers, struct player *player, int *XY, int cursor );

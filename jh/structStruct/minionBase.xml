@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <structStruct>
-  <name>card</name>
+  <name>minionBase</name>
   <vars>
     <subVar>
-      <name>id</name>
+      <name>attack</name>
       <type>0</type>
       <typeIndex>0</typeIndex>
       <initType>0</initType>
@@ -23,7 +23,7 @@
       <typeName></typeName>
     </subVar>
     <subVar>
-      <name>mana</name>
+      <name>health</name>
       <type>0</type>
       <typeIndex>0</typeIndex>
       <initType>0</initType>
@@ -43,9 +43,9 @@
       <typeName></typeName>
     </subVar>
     <subVar>
-      <name></name>
+      <name>mods</name>
       <type>0</type>
-      <typeIndex>6</typeIndex>
+      <typeIndex>3</typeIndex>
       <initType>0</initType>
       <initTypeData>
         <>-1</>
@@ -53,58 +53,47 @@
       <closeType>0</closeType>
       <length>0</length>
       <literal>1</literal>
-      <subComplex>
-        <typeDec>-1</typeDec>
+      <subAl>
+        <curEles>10</curEles>
+        <eleSize>0</eleSize>
+        <overflow>10</overflow>
+        <literal>0</literal>
+        <type>1</type>
+        <typeIndex>2</typeIndex>
+        <length>-1</length>
+        <naked>0</naked>
+        <modNick></modNick>
         <typeName></typeName>
-        <list>
-          <subVar>
-            <name>minion</name>
-            <type>1</type>
-            <typeIndex>7</typeIndex>
-            <initType>0</initType>
-            <initTypeData>
-              <>-1</>
-            </initTypeData>
-            <closeType>0</closeType>
-            <length>0</length>
-            <literal>0</literal>
-            <>-1</>
-            <external>0</external>
-            <attribute>0</attribute>
-            <saveFlag>1</saveFlag>
-            <naked>0</naked>
-            <comment></comment>
-            <modNick></modNick>
-            <typeName></typeName>
-          </subVar>
-          <subVar>
-            <name>spell</name>
-            <type>1</type>
-            <typeIndex>4</typeIndex>
-            <initType>0</initType>
-            <initTypeData>
-              <>-1</>
-            </initTypeData>
-            <closeType>0</closeType>
-            <length>0</length>
-            <literal>0</literal>
-            <>-1</>
-            <external>0</external>
-            <attribute>0</attribute>
-            <saveFlag>1</saveFlag>
-            <naked>0</naked>
-            <comment></comment>
-            <modNick></modNick>
-            <typeName></typeName>
-          </subVar>
-        </list>
-        <prefix></prefix>
-      </subComplex>
+      </subAl>
       <external>0</external>
       <attribute>0</attribute>
       <saveFlag>1</saveFlag>
       <naked>0</naked>
       <comment></comment>
+      <modNick></modNick>
+      <typeName></typeName>
+    </subVar>
+    <subVar>
+      <name>numAttacks</name>
+      <type>0</type>
+      <typeIndex>0</typeIndex>
+      <initType>0</initType>
+      <initTypeData>
+        <>-1</>
+      </initTypeData>
+      <closeType>0</closeType>
+      <length>-1</length>
+      <literal>1</literal>
+      <>-1</>
+      <external>0</external>
+      <attribute>0</attribute>
+      <saveFlag>1</saveFlag>
+      <naked>0</naked>
+      <comment>-1 if i just played the card this turn.
+	// -2 is not played yet (in hand)
+	// at the start of each turn iterate through and set to 0.
+	// then i need to stop attacking at 1 normally, 2 windfury, etc.
+	// actually i think i want this to be the number of re</comment>
       <modNick></modNick>
       <typeName></typeName>
     </subVar>

@@ -29,8 +29,10 @@ MODCORE_DIR
 
 Text:
 /home/jadeb/workspace/jHigh/cardEngine/makefile
+/home/jadeb/workspace/jHigh/cardEngine/lay/cardEngine
 /home/jadeb/workspace/jHigh/cardEngine/src/mod.c
 /home/jadeb/workspace/jHigh/cardEngine/include/mod.h
+
 
 
 jHighLoad:

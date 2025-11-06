@@ -4,6 +4,13 @@
 jh/structStruct/card.xml
 jh/structStruct/cardBase.xml
 jh/structStruct/cardMod.xml
+jh/structStruct/oasis_game.xml
+jh/structStruct/spell.xml
+jh/structStruct/targeting.xml
+jh/structStruct/spellEffect.xml
+jh/structStruct/minionBase.xml
+jh/structStruct/player.xml
+jh/structStruct/pick3.xml
 
 # fileStruct
 jh/fileStruct/mod.xml

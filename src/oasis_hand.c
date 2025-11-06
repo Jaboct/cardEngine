@@ -32,6 +32,7 @@ float colorLBlue[4] = { 0.6, 0.6, 1.0, 1.0 };
 */
 
 
+char *saveDir = "/home/jadeb/workspace/jHigh/cardEngine/res/saves/game_00.xml";
 
 
 int debugPrint_oasisRender = 0;
@@ -42,9 +43,10 @@ ArrayList *cardBaseList = NULL;	// (struct cardBase*)
 
 
 
+struct oasis_game *glob_oasis = NULL;
 
-
-int turn = 0;
+// glob_oasis->oasis_turn
+//int turn = 0;
 // 0 is other
 // 1 is player
 // 2 is enemy
@@ -55,7 +57,7 @@ int turn = 0;
 // 1 = mid picking first 3 cards
 // 2 = actual game.
 // i want like the hide button and stuff.
-int oasis_stage = 0;
+//int oasis_stage = 0;
 
 
 
@@ -68,8 +70,31 @@ int oasis_cursor = 0;
 
 
 
-/// temp struct functs
+//struct player *player;
+//struct player *enemy;
 
+int oasisInited = 0;
+
+
+enum allMyCards {
+	card_defender = 0,
+	card_attacker,
+	card_lvl2,
+	card_taunter,
+	card_priest,
+	card_warrior,
+	card_shieldMaster,
+	card_pws,
+};
+
+struct pick3 pick3[3];
+
+
+
+
+
+/// temp struct functs
+/*
 struct player *playerInit ( ) {
 	struct player *var = malloc ( sizeof ( *var ) );
 
@@ -97,9 +122,18 @@ struct player *playerInit ( ) {
 
 	return var;
 }
+*/
 
 void set_oasis_stage ( int i ) {
-	oasis_stage = i;
+	printf ( "set_oasis_stage ( )\n" );
+	printf ( "i: %d\n", i );
+
+	printf ( "glob_oasis: %p\n", glob_oasis );
+	if ( glob_oasis ) {
+		glob_oasis->oasis_stage = i;
+	}
+
+	printf ( "set_oasis_stage ( ) OVER\n" );
 }
 
 /** Functions */
@@ -118,21 +152,30 @@ void oasis_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *dat
 		printf ( "oasis_render ( )\n" );
 	}
 
-/*
-	draw2dApi->fillRect ( XYWHpass, colorBlack, screenDims, glBuffers );
 
-	draw2dApi->drawCharPre ( fonts[0], colorWhite );
-	draw2dApi->drawString ( screenDims, glBuffers, XYWHpass, fonts[0], "oasis_render ( )" );
-*/
+	if ( !oasisInited ) {
+		oasis_assemble_dom ( XYWHpass );
 
-	if ( oasis_stage == 0 ) {
+		glob_oasis = oasis_gameInit ( );
+		init_oasis_game ( glob_oasis );
+
+		oasisInited = 1;
+	}
+
+
+	struct oasis_game *game = glob_oasis;
+
+	if ( game->oasis_stage == 0 ) {
 		oasis_game_render ( screenDims, glBuffers, XYWHpass, data );
-	} else if ( oasis_stage == 4 ) {
+	} else if ( game->oasis_stage == 4 ) {
 		render_pick3 ( screenDims, glBuffers );
 	}
 }
 
 int oasis_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
+
+	struct oasis_game *game = glob_oasis;
+
 	if ( e->type == SDL_QUIT ) {
 	} else if ( e->type == SDL_KEYDOWN ) {
 //		if ( e->key.keysym.sym == SDLK_1 ) {
@@ -140,9 +183,9 @@ int oasis_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
 	} else if ( e->type == SDL_KEYUP ) {
 	} else if ( e->type == SDL_MOUSEBUTTONDOWN ) {
 		int ret = 0;
-		if ( oasis_stage == 0 ) {
+		if ( game->oasis_stage == 0 ) {
 			ret = oasis_game_event ( e, clickXY, eleWH, data );
-		} else if ( oasis_stage == 4 ) {
+		} else if ( game->oasis_stage == 4 ) {
 			ret = event_pick3 ( e, clickXY, eleWH );
 		}
 
@@ -171,17 +214,15 @@ void oasis_number ( int id ) {
 
 /// Other Functions
 
-struct player *player;
-struct player *enemy;
-
-int oasisInited = 0;
-
-void init_oasis_game ( ) {
+void init_oasis_game ( struct oasis_game *game ) {
 	printf ( "init_oasis_game ( )\n" );
 
+
 	// init player and enemy.
-	player = playerInit ( );
-	enemy = playerInit ( );
+	game->player = playerInit ( );
+	game->enemy = playerInit ( );
+	struct player *player = game->player;
+	struct player *enemy = game->enemy;
 
 	hand_make_cards ( );
 
@@ -207,25 +248,10 @@ void init_oasis_game ( ) {
 	copyCard_id ( enemy->deckTotal, 6 );
 	copyCard_id ( enemy->deckTotal, 7 );
 
-
 	/// TODO, shuffle
-
 
 	printf ( "init_oasis_game ( ) OVER\n" );
 }
-
-enum allMyCards {
-	card_defender = 0,
-	card_attacker,
-	card_lvl2,
-	card_taunter,
-	card_priest,
-	card_warrior,
-	card_shieldMaster,
-	card_pws,
-};
-
-struct pick3 pick3[3];
 
 void hand_make_cards ( ) {
 	printf ( "hand_make_cards ( )\n" );
@@ -254,6 +280,8 @@ void hand_make_cards ( ) {
 	strcpy ( base->name, "attacker" );
 */
 
+printf ( "a\n" );
+
 	base = make_card ( 1, 2, 1, "atacker" );
 	base = make_card ( 2, 3, 2, "lvl 2" );
 	base = make_card ( 2, 1, 3, "taunter" );	// taunt
@@ -265,14 +293,18 @@ void hand_make_cards ( ) {
 	base = make_card ( 2, 3, 3, "warrior" );	// rush
 	base = make_card ( 2, 3, 5, "Shield Master" );
 
+printf ( "b\n" );
+
 // TODO this is wrong.
 	struct cardMod *mod = malloc ( sizeof ( *mod ) );	// taunt cardMod
 	mod->type = 0;
-	arrayListAddEndPointer ( base->modifiers, mod );
+	arrayListAddEndPointer ( base->card->minion->mods, mod );
+
+
 
 	// spell, "Power Word Shield"
 	base = make_cardBase_spell ( "Power Word Shield" );
-	base->mana = 1;
+	base->card->mana = 1;
 
 	struct pick3 *p3 = &pick3[0];
 	strcpy ( p3->name, "Taunts" );
@@ -280,6 +312,8 @@ void hand_make_cards ( ) {
 	p3->cards[1] = card_shieldMaster;
 	p3->cards[2] = card_taunter;
 
+
+printf ( "c\n" );
 
 	p3 = &pick3[1];
 	strcpy ( p3->name, "Killers" );
@@ -300,24 +334,28 @@ void hand_make_cards ( ) {
 // this make a minion only
 // adds to the base list, but also returns card so you can edit it afterwards.
 struct cardBase *make_card ( int mana, int atk, int hp, char *name ) {
+	printf ( "make_card ( )\n" );
+
 	struct cardBase *base = cardBaseInit ( );
 	int id = arrayListGetLength ( cardBaseList );
 	arrayListAddEndPointer ( cardBaseList, base );
-	base->type = 0;
-	base->id = id;
-	base->mana = mana;
-	base->attack = atk;
-	base->health = hp;
+	base->card->id = id;
+	base->card->mana = mana;
+	cardTypeChange0 ( base->card, Minion );
+	base->card->minion->attack = atk;
+	base->card->minion->health = hp;
 	strcpy ( base->name, name );
+
+	printf ( "make_card ( ) OVER\n" );
 
 	return base;
 }
 
 struct cardBase *make_cardBase_spell ( char *name ) {
 	struct cardBase *base = cardBaseInit ( );
-	base->type = 1;	// TODO
+	base->card->type = 1;	// TODO
 	int id = arrayListGetLength ( cardBaseList );
-	base->id = id;
+	base->card->id = id;
 
 	arrayListAddEndPointer ( cardBaseList, base );
 
@@ -334,12 +372,16 @@ struct cardBase *make_cardBase_spell ( char *name ) {
 
 // copy from the caseBaseList[id] to list.
 void copyCard_id ( ArrayList *list, int id ) {
+	printf ( "copyCard_id ( )\n" );
+
 	struct card *card = copyCard_base ( id );
 	if ( card == NULL ) {
 		printf ( "ERROR, copyCard_id ( )\n" );
 		return;
 	}
 	arrayListAddEndPointer ( list, card );
+
+	printf ( "copyCard_id ( ) OVER\n" );
 }
 
 struct card *copyCard_base ( int id ) {
@@ -352,7 +394,10 @@ struct card *copyCard_base ( int id ) {
 	struct cardBase *base = arrayListGetPointer ( cardBaseList, id );
 
 	struct card *card = cardInit ( );
-	card->type = base->type;
+	card_copy ( card, base->card );
+
+/*
+	card->type = base->card->type;
 	card->id = id;
 
 	card->mana = base->mana;
@@ -375,14 +420,53 @@ struct card *copyCard_base ( int id ) {
 	} else if ( base->type == 1 ) {
 //		copySpell ( );
 	}
+*/
 
 	return card;
 }
+
+// sets cardA to cardB
+void card_copy ( struct card *cardA, struct card *cardB ) {
+	printf ( "card_copy ( )\n" );
+
+//	cardA->type = cardB->type;
+	cardA->id = cardB->id;
+	cardA->mana = cardB->mana;
+	cardTypeChange0 ( cardA, cardB->type );
+	if ( cardB->type == 0 ) {
+		copy_minionBase ( cardA->minion, cardB->minion );
+	} else if ( cardB->type == 1 ) {
+//		copySpell ( );
+	}
+
+	printf ( "card_copy ( ) OVER\n" );
+}
+
+void copy_minionBase ( struct minionBase *baseA, struct minionBase *baseB ) {
+	printf ( "copy_minionBase ( )\n" );
+
+	baseA->attack = baseB->attack;
+	baseA->health = baseB->health;
+	baseA->numAttacks = baseB->numAttacks;
+
+	int i = 0;
+	int len = arrayListGetLength ( baseB->mods );
+	while ( i < len ) {
+		struct cardMod *copy = arrayListGetPointer ( baseB->mods, i );
+		struct cardMod *newMod = cardMod_copy ( copy );
+		arrayListAddEndPointer ( baseA->mods, newMod );
+
+		i += 1;
+	}
+}
+
 
 // this should be autogenerated
 struct card *copyCard ( struct card *card ) {
 
 	struct card *var = cardInit ( );
+	card_copy ( var, card );
+/*
 	var->type = card->type;
 	var->id = card->id;
 	var->mana = card->mana;
@@ -399,9 +483,10 @@ struct card *copyCard ( struct card *card ) {
 
 		i += 1;
 	}
-
+*/
 	return var;
 }
+
 
 
 struct cardMod *cardMod_copy ( struct cardMod *copy ) {
@@ -419,14 +504,18 @@ struct cardMod *cardMod_copy ( struct cardMod *copy ) {
 
 
 
+void turn_change_glob ( ) {
+	turn_change ( glob_oasis );
+}
 
-
-void turn_change ( ) {
+void turn_change ( struct oasis_game *game ) {
 	printf ( "turn_change ( )\n" );
 
+	struct player *player = game->player;
+	struct player *enemy = game->enemy;
 
 	// initial turn.
-	if ( turn == 0 ) {
+	if ( game->oasis_turn == 0 ) {
 		// shuffle both, draw both.
 		shuffle_to ( player->deck, player->deckTotal );
 		shuffle_to ( enemy->deck, enemy->deckTotal );
@@ -441,11 +530,11 @@ void turn_change ( ) {
 	}
 
 
-	turn += 1;
-	if ( turn > 2 ) {
-		turn = 1;
+	game->oasis_turn += 1;
+	if ( game->oasis_turn > 2 ) {
+		game->oasis_turn = 1;
 	}
-	if ( turn == 1 ) {
+	if ( game->oasis_turn == 1 ) {
 		// player
 
 		startTurn_player ( player );
@@ -481,7 +570,9 @@ void startTurn_player ( struct player *player ) {
 	int boardLen = get_board_len ( player );
 	int i = 0;
 	while ( i < boardLen ) {
-		player->board[i]->numAttacks = 1;
+		struct card *card = player->board[i];
+		// its on board, so you dont need to cehck its type
+		card->minion->numAttacks = 1;
 		i += 1;
 	}
 }
@@ -702,8 +793,11 @@ char *mod_to_str ( struct cardMod *mod ) {
 
 
 
-void oasis_dead_check ( ) {
+void oasis_dead_check ( struct oasis_game *game ) {
 	// every time a character takes damage run this.
+
+	struct player *player = game->player;
+	struct player *enemy = game->enemy;
 
 	if ( player->health <= 0 ) {
 		// i lose
@@ -712,6 +806,62 @@ void oasis_dead_check ( ) {
 		// i win
 	}
 }
+
+
+
+/// Save and Load
+
+extern struct backbone_structStruct backboneStru_oasis_game;
+extern int oasis_game_attributes[];
+
+extern int len_backbone_arr_cardEngine;
+extern struct backbone_structStruct *backbone_arr_cardEngine[];
+
+
+
+
+extern int num_structStruct_cardEngine;
+extern struct xmlFuncts *xmlFuncts_arr_cardEngine[];
+
+
+
+
+void hand_oasis_load ( char *dir ) {
+	printf ( "hand_oasis_load ( )\n" );
+
+	char buffer[256];
+	sprintf ( buffer, "/home/jadeb/workspace/jHigh/cardEngine/res/saves/save_00.xml" );
+	struct oasis_game *game = loadXmlFile_03 ( buffer, xmlFuncts_arr_cardEngine, num_structStruct_cardEngine );
+	glob_oasis = game;
+
+	printf ( "game: %p\n", game );
+	printf ( "game->player: %p\n", game->player );
+
+	printf ( "hand_oasis_load ( ) OVER\n" );
+}
+
+void hand_oasis_save ( char *dir ) {
+	printf ( "hand_oasis_save ( )\n" );
+
+
+	char buffer[256];
+
+	struct oasis_game *game = glob_oasis;
+
+	sprintf ( buffer, "/home/jadeb/workspace/jHigh/cardEngine/res/saves/save_00.xml" );
+	fwriteXml_backbone ( buffer, &backboneStru_oasis_game, game,
+		oasis_game_attributes, backbone_arr_cardEngine, len_backbone_arr_cardEngine );
+
+
+	printf ( "hand_oasis_save ( ) OVER\n" );
+}
+
+/// Proof
+
+
+
+
+
 
 
 

@@ -90,7 +90,6 @@ solitaire
 Hotkey:
 cardEngine	1	hand_stru_00
 
-
 Append:
 lay/ui/uiGen_hotkey
 
@@ -111,8 +110,11 @@ oasis
 
 
 Hotkey:
-cardEngine	1	turn_change
+cardEngine	1	turn_change_glob
 cardEngine	2	set_oasis_stage	4
+cardEngine	s	hand_oasis_save
+cardEngine	l	hand_oasis_load
+
 
 Append:
 lay/ui/uiGen_hotkey
@@ -150,5 +152,8 @@ Run:
 loop	setStage	2
 cardEngine	fill_stock
 #cardEngine	set_debugPrint_oasisRender	1
+cardEngine	jalbXml_02_set_debug	1
+
+
 
 

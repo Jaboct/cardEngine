@@ -36,8 +36,8 @@ float colorLGreen[4] = { 0.6, 1.0, 0.6, 1.0 };
 
 
 
-extern struct player *player;
-extern struct player *enemy;
+//extern struct player *player;
+//extern struct player *enemy;
 
 
 
@@ -60,7 +60,7 @@ extern int debugPrint_oasisRender;
 
 
 extern int oasisInited;
-
+extern struct oasis_game *glob_oasis;
 
 
 
@@ -144,12 +144,10 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 		printf ( "oasis_game_render ( )\n" );
 	}
 
-	if ( !oasisInited ) {
-		oasis_assemble_dom ( XYWHpass );
-		init_oasis_game ( );
+	struct oasis_game *game = glob_oasis;
+	struct player *player = game->player;
+	struct player *enemy = game->enemy;
 
-		oasisInited = 1;
-	}
 
 	draw2dApi->fillRect ( XYWHpass, colorTan, screenDims, glBuffers );
 
@@ -181,7 +179,7 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 	int slen;
 	int rect[4];
 
-	/// render enemy hp
+	/// render enemy character
 	render_character ( screenDims, glBuffers, enemy, enemyCharXY );
 /*
 	sprintf ( buffer, "%d", enemy->health );
@@ -207,7 +205,7 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 
 
 
-	// my hp
+	// player character
 	render_character ( screenDims, glBuffers, player, playerCharXY );
 /*
 	sprintf ( buffer, "%d", player->health );
@@ -233,11 +231,11 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 
 	int card[4];
 
+	// render enemy deck
+	if ( debugPrint_oasisRender ) {
+		printf ( "render enemy deck\n" );
+	}
 
-
-
-	// render deck
-	// enemy
 	card[0] = XYWHpass[0] + XYWHpass[2] - cardGap - cardW;
 	card[1] = midY - cardGap - cardH;
 	card[2] = cardW;
@@ -264,7 +262,12 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 	draw2dApi->drawString ( screenDims, glBuffers, rect, font, buffer );
 
 
+
 	// render player deck
+	if ( debugPrint_oasisRender ) {
+		printf ( "render player deck\n" );
+	}
+
 	card[1] += cardH + cardGap;
 
 	draw2dApi->fillRect ( card, colorOrange, screenDims, glBuffers );
@@ -317,7 +320,11 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 	}
 }
 
+// renders the character at the center top/bottom of the screen.
 void render_character ( int *screenDims, GLuint *glBuffers, struct player *player, int *XY ) {
+	if ( debugPrint_oasisRender ) {
+		printf ( "render_character ( )\n" );
+	}
 
 	struct jalbFont *font = fonts[0];
 	int glyphW = font->atlasInfo.glyphW;
@@ -362,10 +369,15 @@ void render_character ( int *screenDims, GLuint *glBuffers, struct player *playe
 	draw2dApi->drawString ( screenDims, glBuffers, rect, font, buffer );
 
 
+	if ( debugPrint_oasisRender ) {
+		printf ( "render_character ( ) OVER\n" );
+	}
 }
 
 void render_board ( int *screenDims, GLuint *glBuffers, struct player *player, int *XY, int cursor ) {
-//	printf ( "render_board ( )\n" );
+	if ( debugPrint_oasisRender ) {
+		printf ( "render_board ( )\n" );
+	}
 
 	int i;
 
@@ -400,9 +412,16 @@ void render_board ( int *screenDims, GLuint *glBuffers, struct player *player, i
 
 		i += 1;
 	}
+
+	if ( debugPrint_oasisRender ) {
+		printf ( "render_board ( ) OVER\n" );
+	}
 }
 
 void render_hand ( int *screenDims, GLuint *glBuffers, struct player *player, int *XY, int cursor ) {
+	if ( debugPrint_oasisRender ) {
+		printf ( "render_hand ( )\n" );
+	}
 
 	/// render my hand
 	int handLen = get_hand_len ( player );
@@ -433,6 +452,10 @@ void render_hand ( int *screenDims, GLuint *glBuffers, struct player *player, in
 
 		i += 1;
 	}
+
+	if ( debugPrint_oasisRender ) {
+		printf ( "render_hand ( ) OVER\n" );
+	}
 }
 
 
@@ -449,22 +472,38 @@ void card_render_highlight ( int *screenDims, GLuint *glBuffers, int *XYWHpass )
 	draw2dApi->fillRect ( highlightXYWH, colorGold, screenDims, glBuffers );
 }
 
+/// TODO, these next 2 functs are weird, incorpirate spells
 void oasis_card_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, struct card *card ) {
+	if ( debugPrint_oasisRender ) {
+		printf ( "oasis_card_render ( )\n" );
+	}
+
 	struct cardBase *base = arrayListGetPointer ( cardBaseList, card->id );
-	oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
-		base->name, card->type, card->mana, card->attack, card->health, card->numAttacks, card->mods );
+	if ( base->card->type == Minion ) {
+		oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
+			base->name, card->type, card->mana, card->minion->attack, card->minion->health, card->minion->numAttacks, card->minion->mods );
+	} else if ( base->card->type == Spell ) {
+		oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
+			base->name, card->type, card->mana, card->minion->attack, card->minion->health, card->minion->numAttacks, card->spell->eff->mods );
+	}
 }
 
 void oasis_cardBase_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, struct cardBase *base ) {
+	if ( debugPrint_oasisRender ) {
+		printf ( "oasis_cardBase_render ( )\n" );
+	}
+
+//	struct card *card = base->card;
 	oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
-		base->name, base->type, base->mana, base->attack, base->health, -2, NULL );
+		base->name, base->card->type, base->card->mana, base->card->minion->attack, base->card->minion->health, -2, NULL );
 }
 
 void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 		char *name, int type, int mana, int attack, int health, int numAttacks, ArrayList *mods ) {
 
 	if ( debugPrint_oasisRender ) {
-		printf ( "oasis_card_render ( )\n" );
+		printf ( "oasis_card_render_base ( )\n" );
+		printf ( "type: %d\n", type );
 	}
 //	sayIntArray ( "XYWHpass", XYWHpass, 4 );
 
@@ -510,6 +549,8 @@ void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 
 
 	if ( type == 0 ) {
+		// minion
+
 	// attack
 	XYWH[0] = XYWHpass[0] + 2;
 	XYWH[1] = XYWHpass[1] + cardH - 2;
@@ -573,7 +614,7 @@ void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 	XYWH[1] += font->atlasInfo.glyphH;
 	int i = 0;
 	int numMods = arrayListGetLength ( mods );
-//	printf ( "numMods: %d\n", numMods );
+	printf ( "numMods: %d\n", numMods );
 	while ( i < numMods ) {
 		printf ( "i: %d\n", i );
 
@@ -660,6 +701,11 @@ void render_pick3 ( int *screenDims, GLuint *glBuffers ) {
 		row3_init ( screenDims );
 		row3_inited = 1;
 	}
+
+
+	struct oasis_game *game = glob_oasis;
+	struct player *player = game->player;
+//	struct player *enemy = game->enemy;
 
 
 	struct jalbFont *font = fonts[0];

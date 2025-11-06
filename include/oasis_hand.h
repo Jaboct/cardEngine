@@ -19,10 +19,16 @@
 
 struct card;
 struct cardMod;
+struct minionBase;
+
+struct player;
+
+struct oasis_game;
 
 
 /** Structs */
 
+/*
 struct player {
 	ArrayList *deck;	// (struct card*)
 	ArrayList *deckTotal;	// (struct card*)
@@ -41,6 +47,7 @@ struct pick3 {
 	char name[256];
 	int cards[3];
 };
+*/
 
 
 #define HAND_MAX 10
@@ -62,7 +69,7 @@ void oasis_number ( int id );
 
 /// Other Functions
 
-void init_oasis_game ( );
+void init_oasis_game ( struct oasis_game *game );
 void hand_make_cards ( );
 
 // adds to the base list, but also returns card so you can edit it afterwards.
@@ -71,13 +78,18 @@ struct cardBase *make_cardBase_spell ( char *name );
 
 void copyCard_id ( ArrayList *list, int id );
 struct card *copyCard_base ( int id );
+
+// sets cardA to cardB
+void card_copy ( struct card *cardA, struct card *cardB );
+void copy_minionBase ( struct minionBase *baseA, struct minionBase *baseB );
 struct card *copyCard ( struct card *card );
+
 
 struct cardMod *cardMod_copy ( struct cardMod *copy );
 
 
-
-void turn_change ( );
+void turn_change_glob ( );
+void turn_change ( struct oasis_game *game );
 
 void startTurn_player ( struct player *player );
 
@@ -88,6 +100,8 @@ void enemy_ai ( struct player *player );
 
 int draw_player ( struct player *player );
 void mana_increment ( struct player *player );
+
+void oasis_dead_check ( struct oasis_game *game );
 
 
 // game
@@ -100,5 +114,9 @@ int get_board_len ( struct player *player );
 char *mod_to_str ( struct cardMod *mod );
 
 
+
+/// Save and Load
+
+void hand_oasis_load ( char *dir );
 
 

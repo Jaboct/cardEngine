@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <structStruct>
-  <name>card</name>
+  <name>spell</name>
   <vars>
     <subVar>
-      <name>id</name>
+      <name>type</name>
       <type>0</type>
       <typeIndex>0</typeIndex>
       <initType>0</initType>
@@ -23,15 +23,15 @@
       <typeName></typeName>
     </subVar>
     <subVar>
-      <name>mana</name>
-      <type>0</type>
-      <typeIndex>0</typeIndex>
+      <name>tar</name>
+      <type>1</type>
+      <typeIndex>5</typeIndex>
       <initType>0</initType>
       <initTypeData>
         <>-1</>
       </initTypeData>
       <closeType>0</closeType>
-      <length>-1</length>
+      <length>0</length>
       <literal>1</literal>
       <>-1</>
       <external>0</external>
@@ -43,8 +43,8 @@
       <typeName></typeName>
     </subVar>
     <subVar>
-      <name></name>
-      <type>0</type>
+      <name>eff</name>
+      <type>1</type>
       <typeIndex>6</typeIndex>
       <initType>0</initType>
       <initTypeData>
@@ -53,53 +53,7 @@
       <closeType>0</closeType>
       <length>0</length>
       <literal>1</literal>
-      <subComplex>
-        <typeDec>-1</typeDec>
-        <typeName></typeName>
-        <list>
-          <subVar>
-            <name>minion</name>
-            <type>1</type>
-            <typeIndex>7</typeIndex>
-            <initType>0</initType>
-            <initTypeData>
-              <>-1</>
-            </initTypeData>
-            <closeType>0</closeType>
-            <length>0</length>
-            <literal>0</literal>
-            <>-1</>
-            <external>0</external>
-            <attribute>0</attribute>
-            <saveFlag>1</saveFlag>
-            <naked>0</naked>
-            <comment></comment>
-            <modNick></modNick>
-            <typeName></typeName>
-          </subVar>
-          <subVar>
-            <name>spell</name>
-            <type>1</type>
-            <typeIndex>4</typeIndex>
-            <initType>0</initType>
-            <initTypeData>
-              <>-1</>
-            </initTypeData>
-            <closeType>0</closeType>
-            <length>0</length>
-            <literal>0</literal>
-            <>-1</>
-            <external>0</external>
-            <attribute>0</attribute>
-            <saveFlag>1</saveFlag>
-            <naked>0</naked>
-            <comment></comment>
-            <modNick></modNick>
-            <typeName></typeName>
-          </subVar>
-        </list>
-        <prefix></prefix>
-      </subComplex>
+      <>-1</>
       <external>0</external>
       <attribute>0</attribute>
       <saveFlag>1</saveFlag>

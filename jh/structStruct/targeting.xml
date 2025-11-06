@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structStruct>
+  <name>targeting</name>
+  <vars>
+  </vars>
+  <overloadRenderEdit></overloadRenderEdit>
+  <overloadEventEdit></overloadEventEdit>
+  <structDeclaration>0</structDeclaration>
+  <hide_edit>1</hide_edit>
+  <isTypedef>0</isTypedef>
+  <typedefType>0</typedefType>
+  <typedefTypeIndex>0</typedefTypeIndex>
+  <postInit>0</postInit>
+</structStruct>

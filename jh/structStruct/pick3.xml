@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <structStruct>
-  <name>cardBase</name>
+  <name>pick3</name>
   <vars>
     <subVar>
       <name>name</name>
@@ -23,16 +23,16 @@
       <typeName></typeName>
     </subVar>
     <subVar>
-      <name>card</name>
-      <type>1</type>
+      <name>cards</name>
+      <type>0</type>
       <typeIndex>0</typeIndex>
       <initType>0</initType>
       <initTypeData>
         <>-1</>
       </initTypeData>
       <closeType>0</closeType>
-      <length>0</length>
-      <literal>0</literal>
+      <length>3</length>
+      <literal>1</literal>
       <>-1</>
       <external>0</external>
       <attribute>0</attribute>

@@ -2,6 +2,28 @@
 <structStruct>
   <name>cardMod</name>
   <vars>
+    <subVar>
+      <name>type</name>
+      <type>0</type>
+      <typeIndex>0</typeIndex>
+      <initType>0</initType>
+      <initTypeData>
+        <>-1</>
+      </initTypeData>
+      <closeType>0</closeType>
+      <length>-1</length>
+      <literal>1</literal>
+      <>-1</>
+      <external>0</external>
+      <attribute>0</attribute>
+      <saveFlag>1</saveFlag>
+      <naked>0</naked>
+      <comment>0 taunt
+	// 1 heal?
+	// 2 damage?</comment>
+      <modNick></modNick>
+      <typeName></typeName>
+    </subVar>
   </vars>
   <overloadRenderEdit></overloadRenderEdit>
   <overloadEventEdit></overloadEventEdit>
