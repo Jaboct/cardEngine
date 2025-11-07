@@ -24,6 +24,26 @@
       <modNick></modNick>
       <typeName></typeName>
     </subVar>
+    <subVar>
+      <name>name</name>
+      <type>0</type>
+      <typeIndex>4</typeIndex>
+      <initType>0</initType>
+      <initTypeData>
+        <>-1</>
+      </initTypeData>
+      <closeType>0</closeType>
+      <length>-1</length>
+      <literal>1</literal>
+      <>-1</>
+      <external>0</external>
+      <attribute>0</attribute>
+      <saveFlag>1</saveFlag>
+      <naked>0</naked>
+      <comment></comment>
+      <modNick></modNick>
+      <typeName></typeName>
+    </subVar>
   </vars>
   <overloadRenderEdit></overloadRenderEdit>
   <overloadEventEdit></overloadEventEdit>

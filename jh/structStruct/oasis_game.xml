@@ -18,7 +18,8 @@
       <attribute>0</attribute>
       <saveFlag>1</saveFlag>
       <naked>0</naked>
-      <comment></comment>
+      <comment>0 = in a lobby,
+	// 1 = in a game</comment>
       <modNick></modNick>
       <typeName></typeName>
     </subVar>
@@ -38,7 +39,9 @@
       <attribute>0</attribute>
       <saveFlag>1</saveFlag>
       <naked>0</naked>
-      <comment></comment>
+      <comment>0 = first pick 3,
+	// 1 = second pick 3 (if there is one)
+	// 2, about to start game (hit play button?)</comment>
       <modNick></modNick>
       <typeName></typeName>
     </subVar>
@@ -58,7 +61,7 @@
       <attribute>0</attribute>
       <saveFlag>1</saveFlag>
       <naked>0</naked>
-      <comment></comment>
+      <comment>just keeps track of many bosses you have beat</comment>
       <modNick></modNick>
       <typeName></typeName>
     </subVar>
@@ -78,7 +81,8 @@
       <attribute>0</attribute>
       <saveFlag>1</saveFlag>
       <naked>0</naked>
-      <comment></comment>
+      <comment>0 player,
+	// 1 enemy</comment>
       <modNick></modNick>
       <typeName></typeName>
     </subVar>

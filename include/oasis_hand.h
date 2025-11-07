@@ -72,6 +72,11 @@ void oasis_number ( int id );
 void init_oasis_game ( struct oasis_game *game );
 void hand_make_cards ( );
 
+void hand_pick3_char ( );
+void hand_pick3_cards ( );
+void hand_pick3_special ( );
+
+
 // adds to the base list, but also returns card so you can edit it afterwards.
 struct cardBase *make_card ( int mana, int atk, int hp, char *name );
 struct cardBase *make_cardBase_spell ( char *name );
@@ -90,6 +95,10 @@ struct cardMod *cardMod_copy ( struct cardMod *copy );
 
 void turn_change_glob ( );
 void turn_change ( struct oasis_game *game );
+
+void turn_change_lobby_glob ( );
+void turn_change_lobby ( struct oasis_game *game );
+
 
 void startTurn_player ( struct player *player );
 
@@ -118,5 +127,21 @@ char *mod_to_str ( struct cardMod *mod );
 /// Save and Load
 
 void hand_oasis_load ( char *dir );
+
+
+/// say
+
+void say_myPlayer ( );
+void say_player ( struct player *player );
+
+
+
+
+
+
+
+struct cardBase *get_base_id ( int id );
+
+
 
 

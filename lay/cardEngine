@@ -1,7 +1,10 @@
 
 Append:
-lay/layoutFile_default
+lay/layoutFile_default2
 
+Font:
+res/UbuntuMono-R.ttf	16
+res/UbuntuMono-R.ttf	32
 
 Lib:
 cardEngine	cardEngine
@@ -111,10 +114,11 @@ oasis
 
 Hotkey:
 cardEngine	1	turn_change_glob
-cardEngine	2	set_oasis_stage	4
+cardEngine	2	turn_change_lobby_glob
+cardEngine	3	set_oasis_stage	4
 cardEngine	s	hand_oasis_save
 cardEngine	l	hand_oasis_load
-
+cardEngine	p	say_myPlayer
 
 Append:
 lay/ui/uiGen_hotkey
@@ -136,6 +140,7 @@ Setter:
 draw2d	getFunctWrap	cardEngine	setDraw2dApi
 //draw3d	getFunctWrap	cardEngine	setDraw3dApi	// draw3d	jalbDraw3dWrap
 font	getFontFirst	cardEngine	setFont16
+font	getFontNext	cardEngine	setFont32
 
 Getter:
 layoutUi	addCanvasEle	cardEngine	setAddCanvas
@@ -152,7 +157,10 @@ Run:
 loop	setStage	2
 cardEngine	fill_stock
 #cardEngine	set_debugPrint_oasisRender	1
-cardEngine	jalbXml_02_set_debug	1
+
+
+Run:
+#cardEngine	jalbXml_02_set_debug	1
 
 
 

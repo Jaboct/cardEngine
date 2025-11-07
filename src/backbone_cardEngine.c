@@ -174,6 +174,7 @@ struct backbone_structStruct backboneStru_cardBase = {
 
 int cardMod_attributes[] = {
 	0,
+	0,
 };
 struct backbone_subVar backboneVar_cardMod_type = {
 	.name = "type",
@@ -189,12 +190,27 @@ struct backbone_subVar backboneVar_cardMod_type = {
 	.saveFlag = 1,
 	.naked = 0,
 };
+struct backbone_subVar backboneVar_cardMod_name = {
+	.name = "name",
+	.type = 0,
+	.typeIndex = 4,
+	.initType = 0,
+	.length = -1,
+	.literal = 1,
+	.data = {
+		.id = 0,
+	},
+	.external = offsetof ( struct cardMod, name ),
+	.saveFlag = 1,
+	.naked = 0,
+};
 struct backbone_subVar *cardMod_varArr[] = {
 	&backboneVar_cardMod_type,
+	&backboneVar_cardMod_name,
 };
 struct backbone_structStruct backboneStru_cardMod = {
 	.name = "cardMod",
-	.varsLen = 1,
+	.varsLen = 2,
 	.vars = cardMod_varArr,
 	.overloadRenderEdit = "",
 	.overloadEventEdit = "",
@@ -324,6 +340,7 @@ int spell_attributes[] = {
 	0,
 	0,
 	0,
+	0,
 };
 struct backbone_subVar backboneVar_spell_type = {
 	.name = "type",
@@ -353,28 +370,52 @@ struct backbone_subVar backboneVar_spell_tar = {
 	.saveFlag = 1,
 	.naked = 0,
 };
-struct backbone_subVar backboneVar_spell_eff = {
-	.name = "eff",
+struct backbone_subAl spell_effList_subAl = {
+	.overflow = 10,
+	.literal = 0,
 	.type = 1,
 	.typeIndex = 6,
+	.length = -1,
+	.naked = 0,
+};
+struct backbone_subVar backboneVar_spell_effList = {
+	.name = "effList",
+	.type = 0,
+	.typeIndex = 3,
 	.initType = 0,
 	.length = 0,
 	.literal = 1,
 	.data = {
 		.id = 0,
+		.ptr = &spell_effList_subAl,
 	},
-	.external = offsetof ( struct spell, eff ),
+	.external = offsetof ( struct spell, effList ),
+	.saveFlag = 1,
+	.naked = 0,
+};
+struct backbone_subVar backboneVar_spell_modName = {
+	.name = "modName",
+	.type = 0,
+	.typeIndex = 4,
+	.initType = 0,
+	.length = -1,
+	.literal = 1,
+	.data = {
+		.id = 0,
+	},
+	.external = offsetof ( struct spell, modName ),
 	.saveFlag = 1,
 	.naked = 0,
 };
 struct backbone_subVar *spell_varArr[] = {
 	&backboneVar_spell_type,
 	&backboneVar_spell_tar,
-	&backboneVar_spell_eff,
+	&backboneVar_spell_effList,
+	&backboneVar_spell_modName,
 };
 struct backbone_structStruct backboneStru_spell = {
 	.name = "spell",
-	.varsLen = 3,
+	.varsLen = 4,
 	.vars = spell_varArr,
 	.overloadRenderEdit = "",
 	.overloadEventEdit = "",
@@ -387,12 +428,60 @@ struct backbone_structStruct backboneStru_spell = {
 
 
 int targeting_attributes[] = {
+	0,
+	0,
+	0,
+};
+struct backbone_subVar backboneVar_targeting_side = {
+	.name = "side",
+	.type = 0,
+	.typeIndex = 0,
+	.initType = 0,
+	.length = -1,
+	.literal = 1,
+	.data = {
+		.id = 0,
+	},
+	.external = offsetof ( struct targeting, side ),
+	.saveFlag = 1,
+	.naked = 0,
+};
+struct backbone_subVar backboneVar_targeting_who = {
+	.name = "who",
+	.type = 0,
+	.typeIndex = 0,
+	.initType = 0,
+	.length = -1,
+	.literal = 1,
+	.data = {
+		.id = 0,
+	},
+	.external = offsetof ( struct targeting, who ),
+	.saveFlag = 1,
+	.naked = 0,
+};
+struct backbone_subVar backboneVar_targeting_count = {
+	.name = "count",
+	.type = 0,
+	.typeIndex = 0,
+	.initType = 0,
+	.length = -1,
+	.literal = 1,
+	.data = {
+		.id = 0,
+	},
+	.external = offsetof ( struct targeting, count ),
+	.saveFlag = 1,
+	.naked = 0,
 };
 struct backbone_subVar *targeting_varArr[] = {
+	&backboneVar_targeting_side,
+	&backboneVar_targeting_who,
+	&backboneVar_targeting_count,
 };
 struct backbone_structStruct backboneStru_targeting = {
 	.name = "targeting",
-	.varsLen = 0,
+	.varsLen = 3,
 	.vars = targeting_varArr,
 	.overloadRenderEdit = "",
 	.overloadEventEdit = "",
@@ -405,7 +494,6 @@ struct backbone_structStruct backboneStru_targeting = {
 
 
 int spellEffect_attributes[] = {
-	0,
 	0,
 	0,
 	0,
@@ -452,38 +540,14 @@ struct backbone_subVar backboneVar_spellEffect_dmg = {
 	.saveFlag = 1,
 	.naked = 0,
 };
-struct backbone_subAl spellEffect_mods_subAl = {
-	.overflow = 10,
-	.literal = 0,
-	.type = 1,
-	.typeIndex = 2,
-	.length = -1,
-	.naked = 0,
-};
-struct backbone_subVar backboneVar_spellEffect_mods = {
-	.name = "mods",
-	.type = 0,
-	.typeIndex = 3,
-	.initType = 0,
-	.length = 0,
-	.literal = 1,
-	.data = {
-		.id = 0,
-		.ptr = &spellEffect_mods_subAl,
-	},
-	.external = offsetof ( struct spellEffect, mods ),
-	.saveFlag = 1,
-	.naked = 0,
-};
 struct backbone_subVar *spellEffect_varArr[] = {
 	&backboneVar_spellEffect_type,
 	&backboneVar_spellEffect_heal,
 	&backboneVar_spellEffect_dmg,
-	&backboneVar_spellEffect_mods,
 };
 struct backbone_structStruct backboneStru_spellEffect = {
 	.name = "spellEffect",
-	.varsLen = 4,
+	.varsLen = 3,
 	.vars = spellEffect_varArr,
 	.overloadRenderEdit = "",
 	.overloadEventEdit = "",

@@ -93,6 +93,9 @@ int oasis_game_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
 	if ( inBox ( clickXY, fullBoard ) ) {
 		printf ( "clicked on player board\n" );
 
+		int clickZone = get_clickZone ( clickXY, fullBoard );
+		printf ( "clickZone: %d\n", clickZone );
+
 		if ( oasis_cursor >= oasis_cursor_hand &&
 		     oasis_cursor < oasis_cursor_board ) {
 			// hand is selected, try to play to board.
@@ -104,7 +107,10 @@ int oasis_game_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
 // for spells: am i clicking on a minion
 // for minions, am i clicking, idk lets call it left or right of a card (including on the card, split 50% of the way throught it horizontally)
 
-			play_hand_to_board ( player, oasis_cursor - oasis_cursor_hand );
+			int clickZone = get_clickZone ( clickXY, fullBoard );
+			int board = 0;
+
+			play_hand_to_board ( player, oasis_cursor - oasis_cursor_hand, board, clickZone );
 
 			oasis_cursor = 0;
 		} else if ( oasis_cursor == 0 ) {
@@ -183,6 +189,44 @@ sayIntArray ( "cardXYWH", cardXYWH, 4 );
 	return 0;
 }
 
+int get_clickZone ( int *clickXYpass, int *fullBoard ) {
+	// margin between cards is: cardGap
+	// cardWidth is: cardW
+
+	sayIntArray ( "clickXYpass", clickXYpass, 2 );
+
+	int clickXY[2] = {
+		clickXYpass[0] - fullBoard[0],
+		clickXYpass[1] - fullBoard[1],
+	};
+
+	int card = clickXY[0] / (cardW + cardGap);
+	clickXY[0] %= (cardW + cardGap);
+
+	sayIntArray ( "clickXY", clickXY, 2 );
+
+	int zone = 0;
+
+	int leftMargin = cardGap + (cardGap / 2);	// gap/2 for the left of the card. gap for the first x px of the card
+	int centMargin = (cardW - cardGap) + (cardGap / 2);
+
+	printf ( "leftMargin: %d\n", leftMargin );
+	printf ( "centMargin: %d\n", centMargin );
+
+	if ( clickXY[0] < leftMargin ) {
+		// its left of the first card
+		// zone = 0;
+	} else if ( clickXY[0] < centMargin ) {
+		zone = 1;
+	} else {
+		zone = 2;
+	}
+	zone += card * 3;
+
+	return zone;
+}
+
+/// TODO, similar to above.
 // doesnt simply return the index, it also makes sure a minion exists there.
 int board_click_index ( struct player *player, int *clickXY, int *boardXYWH ) {
 
@@ -211,8 +255,10 @@ int board_click_index ( struct player *player, int *clickXY, int *boardXYWH ) {
 }
 
 // for for the player only.
-void play_hand_to_board ( struct player *player, int handI ) {
+// board: 0 player, 1 enemy.
+void play_hand_to_board ( struct player *player, int handI, int board, int clickZone ) {
 	printf ( "play_hand_to_board ( )\n" );
+	printf ( "clickZone: %d\n", clickZone );
 
 	// check to make sure handI isnt out of range?
 
@@ -232,37 +278,172 @@ void play_hand_to_board ( struct player *player, int handI ) {
 		return;
 	}
 
-	if ( handCard->type == 0 ) {
+	int played = 0;
+
+	if ( handCard->type == Minion ) {
 		player->mana -= handCard->mana;
 		player->board[boardLen] = player->hand[handI];
 		player->board[boardLen]->minion->numAttacks = -1;	// -1 means sleeping cuz it was just played
-	} else if ( handCard->type == 1 ) {
+
+		played = 1;
+
+	} else if ( handCard->type == Spell ) {
 		// spell.
 		// TODO, figure which minion i apply this to.
-		if ( boardLen > 0 ) {
-			player->mana -= handCard->mana;
-			struct card *minion = player->board[0];
-			apply_spell_minion ( handCard, minion );
+
+		// zone to minion.
+//		int minionIndex = clickZone / 3;
+
+		struct cardBase *base = get_base_id ( handCard->id );
+
+//		printf ( "base->card->spell->discard: %d\n", base->card->spell->discard );
+
+		played = play_spell ( base->card, board, clickZone );
+		if ( base->card->spell->discard == discard_shuf_playDeck ) {
+			shuffle_into_deck ( handCard, player->deck );
 		}
+/*
+		if ( boardLen > minionIndex ) {
+			player->mana -= handCard->mana;
+			struct card *minion = player->board[minionIndex];
+			apply_spell_minion ( handCard->spell, minion );
+
+			played = 1;
+		}
+*/
 	}
 
-	shrink_array ( player->hand, handI, HAND_MAX );
+	if ( played ) {
+		shrink_array ( player->hand, handI, HAND_MAX );
+	}
 
 	printf ( "play_hand_to_board ( ) OVER\n" );
 }
 
-void apply_spell_minion ( struct card *spell, struct card *minion ) {
-	minion->minion->health += 2;
-
-	// TODO handle spell better
-	struct cardMod *mod = malloc ( sizeof ( *mod ) );
-	mod->type = 1;
-	arrayListAddEndPointer ( minion->minion->mods, mod );
+void shuffle_into_deck ( struct card *card, ArrayList *deck ) {
+	printf ( "shuffle_into_deck ( )\n" );
+	int len = arrayListGetLength ( deck );
+	printf ( "deck.len: %d\n", len );
+	if ( len > 0 ) {
+		// if len == 1, %(len+1) = %2, meaning u can have 0 or 1 remainder.
+		int r = rand ( ) % (len + 1);
+		arrayListAddPointerI ( deck, card, r );
+	}
+	printf ( "deck.len: %d\n", arrayListGetLength ( deck ) );
 }
+
+// board 0 is enemy, 1 is player.
+int play_spell ( struct card *card, int board, int clickZone ) {
+	printf ( "play_spell ( )\n" );
+	printf ( "board: %d\n", board );
+
+	struct oasis_game *game = glob_oasis;
+
+	struct spell *spell = card->spell;
+	struct targeting *target = spell->tar;
+
+	printf ( "target: %p\n", target );
+	printf ( "target->count: %d\n", target->count );
+	printf ( "target->who: %d\n", target->who );
+	printf ( "target->side: %d\n", target->side );
+
+
+	if ( target->count == target_everyone ) {
+		printf ( "target everyone\n" );
+		if ( target->side == tar_aly ||
+		     target->side == tar_either ) {
+			// apply to all alies
+		}
+		if ( target->side == tar_enemy ||
+		     target->side == tar_either ) {
+			// apply to all enemies.
+		}
+
+	} else {
+		printf ( "printf target->count == target_num: %d\n", target->count );
+
+		// first see if its randon.
+		if ( target->who == tar_rand ) {
+			// doesnt matter where i click?
+			// well if its tar random enemy do i want to have to click on the enemy board?
+			// i dont care.
+			printf ( "TODO apply random spell\n" );
+		}
+
+		if ( target->side == tar_aly ) {
+			printf ( "case on aly\n" );
+			if ( board == 0 ) {
+				// cast on aly.
+
+				int minionIndex = clickZone / 3;
+				int numAlyBoard = get_board_len ( game->player );
+printf ( "single target aly\n" );
+printf ( "minionIndex: %d\n", minionIndex );
+printf ( "numAlyBoard: %d\n", numAlyBoard );
+
+
+
+				if ( minionIndex < numAlyBoard ) {
+					apply_spell_minion ( spell, game->player->board[minionIndex] );
+					return 1;
+				}
+			}
+		} else if ( target->side == tar_enemy ) {
+			if ( board == 1 ) {
+				// cast on enemy.
+			}
+		} else if ( target->side == tar_either ) {
+			// cast on click
+		}
+	}
+	return 0;
+}
+
+void apply_spell_minion ( struct spell *spell, struct card *minion ) {
+	printf ( "apply_spell_minion ( )\n" );
+
+	int i = 0;
+	int len = arrayListGetLength ( spell->effList );
+	while ( i < len ) {
+		struct spellEffect *eff = arrayListGetPointer ( spell->effList, i );
+
+		apply_spellEffect_minion ( eff, minion );
+
+		i += 1;
+	}
+
+	struct cardMod *mod = cardModInit ( );
+	strcpy ( mod->name, spell->modName );
+
+	mod->type = eff_buffHp;
+	arrayListAddEndPointer ( minion->minion->mods, mod );
+
+
+	printf ( "apply_spell_minion ( ) OVER\n" );
+}
+
+void apply_spellEffect_minion ( struct spellEffect *eff, struct card *minion ) {
+	printf ( "apply_spellEffect_minion ( )\n" );
+	printf ( "eff->type: %d\n", eff->type );
+
+	if ( eff->type == eff_buffHp ) {
+		minion->minion->health += eff->heal;
+//		minion->minion->maxHp += 2;
+	} else if ( eff->type == eff_buffAtk ) {
+		minion->minion->attack += eff->heal;
+		
+	} else {
+		printf ( "ERROR, apply_spellEffect_minion ( )\n" );
+	}
+
+	printf ( "apply_spellEffect_minion ( ) OVER\n" );
+}
+
 
 
 // i am removing card at arr[i], so shift everything at an index above that, left by 1.
 // make sure the final arr[index] is set to null.
+// this doenst free, sometimes i will want it to free, othertimes i wont...
 void shrink_array ( struct card *arr[], int i, int max ) {
 	while ( i < max - 1 ) {
 		if ( arr[i+1] != NULL ) {

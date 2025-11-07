@@ -36,6 +36,7 @@ char *saveDir = "/home/jadeb/workspace/jHigh/cardEngine/res/saves/game_00.xml";
 
 
 int debugPrint_oasisRender = 0;
+int debugPrint_oasis_copy = 0;
 
 ArrayList *cardBaseList = NULL;	// (struct cardBase*)
 
@@ -85,6 +86,9 @@ enum allMyCards {
 	card_warrior,
 	card_shieldMaster,
 	card_pws,
+	card_hat,
+	card_torch,
+	card_journal,
 };
 
 struct pick3 pick3[3];
@@ -166,9 +170,9 @@ void oasis_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *dat
 	struct oasis_game *game = glob_oasis;
 
 	if ( game->oasis_stage == 0 ) {
-		oasis_game_render ( screenDims, glBuffers, XYWHpass, data );
-	} else if ( game->oasis_stage == 4 ) {
 		render_pick3 ( screenDims, glBuffers );
+	} else if ( game->oasis_stage == 1 ) {
+		oasis_game_render ( screenDims, glBuffers, XYWHpass, data );
 	}
 }
 
@@ -176,17 +180,21 @@ int oasis_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
 
 	struct oasis_game *game = glob_oasis;
 
+	int ret = 0;
+
 	if ( e->type == SDL_QUIT ) {
 	} else if ( e->type == SDL_KEYDOWN ) {
-//		if ( e->key.keysym.sym == SDLK_1 ) {
-//		}
+		if ( game->oasis_stage == 0 ) {
+			ret = event_pick3 ( e, clickXY, eleWH );
+			return ret;
+		}
+
 	} else if ( e->type == SDL_KEYUP ) {
 	} else if ( e->type == SDL_MOUSEBUTTONDOWN ) {
-		int ret = 0;
 		if ( game->oasis_stage == 0 ) {
-			ret = oasis_game_event ( e, clickXY, eleWH, data );
-		} else if ( game->oasis_stage == 4 ) {
 			ret = event_pick3 ( e, clickXY, eleWH );
+		} else if ( game->oasis_stage == 1 ) {
+			ret = oasis_game_event ( e, clickXY, eleWH, data );
 		}
 
 		return ret;
@@ -195,6 +203,7 @@ int oasis_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
 //			e->button.x, or clickXY[0]
 //		} else if ( e->button.button == SDL_BUTTON_RIGHT ) {
 //		}
+
 	} else if ( e->type == SDL_MOUSEBUTTONUP ) {
 	} else if ( e->type == SDL_MOUSEMOTION ) {
 	} else if ( e->type == SDL_MOUSEWHEEL ) {
@@ -223,6 +232,9 @@ void init_oasis_game ( struct oasis_game *game ) {
 	game->enemy = playerInit ( );
 	struct player *player = game->player;
 	struct player *enemy = game->enemy;
+
+	player->health = 15;
+	enemy->health = 10;
 
 	hand_make_cards ( );
 
@@ -280,8 +292,6 @@ void hand_make_cards ( ) {
 	strcpy ( base->name, "attacker" );
 */
 
-printf ( "a\n" );
-
 	base = make_card ( 1, 2, 1, "atacker" );
 	base = make_card ( 2, 3, 2, "lvl 2" );
 	base = make_card ( 2, 1, 3, "taunter" );	// taunt
@@ -293,27 +303,104 @@ printf ( "a\n" );
 	base = make_card ( 2, 3, 3, "warrior" );	// rush
 	base = make_card ( 2, 3, 5, "Shield Master" );
 
-printf ( "b\n" );
-
-// TODO this is wrong.
-	struct cardMod *mod = malloc ( sizeof ( *mod ) );	// taunt cardMod
-	mod->type = 0;
+	// taunt cardMod
+	struct cardMod *mod = cardModInit ( );
+	strcpy ( mod->name, "Taunt" );
+	mod->type = cardMod_taunt;
 	arrayListAddEndPointer ( base->card->minion->mods, mod );
 
+printf ( "APPLY TAUNT\n" );
+	printf ( "mod: %p\n", mod );
+	printf ( "mod->name: %p\n", mod->name );
+	printf ( "base->card->minion->mods: %p\n", base->card->minion->mods );
 
 
 	// spell, "Power Word Shield"
-	base = make_cardBase_spell ( "Power Word Shield" );
+	base = make_cardBase_spell ( "PW: Shield" );
+	base->card->mana = 1;
+	struct spell *spell = base->card->spell;
+	struct targeting *tar = spell->tar;
+	struct spellEffect *eff = spellEffectInit ( );;
+	arrayListAddEndPointer ( spell->effList, eff );
+	strcpy ( spell->modName, "PW: Shield" );
+
+	tar->side = tar_aly;
+	tar->who = tar_minion;
+	tar->count = target_num + 0;	// casts on 1+0 guy(s)
+
+	eff->type = eff_buffHp;
+	eff->heal = 2;
+
+
+	printf ( "tar: %p\n", tar );
+	printf ( "tar->count: %d\n", tar->count );
+
+
+
+	base = make_cardBase_spell ( "Hat" );
 	base->card->mana = 1;
 
+	spell = base->card->spell;
+	strcpy ( spell->modName, "Hat: +2/+2" );
+	spell->discard = discard_shuf_playDeck;
+
+	tar = spell->tar;
+	tar->side = tar_aly;
+	tar->who = tar_minion;
+	tar->count = target_num + 0;	// casts on 1+0 guy(s)
+
+	eff = spellEffectInit ( );
+	arrayListAddEndPointer ( spell->effList, eff );
+	eff->type = eff_buffHp;
+	eff->heal = 2;
+
+	eff = spellEffectInit ( );
+	arrayListAddEndPointer ( spell->effList, eff );
+	eff->type = eff_buffAtk;
+	eff->heal = 2;
+
+
+	base = make_cardBase_spell ( "Torch" );
+	base->card->mana = 1;
+
+	base = make_cardBase_spell ( "Journal" );
+	base->card->mana = 1;
+
+
+	hand_pick3_char ( );
+
+	printf ( "hand_make_cards ( ) OVER\n" );
+}
+
+void hand_pick3_char ( ) {
+	struct pick3 *p3 = &pick3[0];
+	strcpy ( p3->name, "Character 00" );
+	p3->cards[0] = -1;
+	p3->cards[1] = -1;
+	p3->cards[2] = -1;
+
+
+	p3 = &pick3[1];
+	strcpy ( p3->name, "Character 01" );
+	p3->cards[0] = -1;
+	p3->cards[1] = -1;
+	p3->cards[2] = -1;
+
+
+	p3 = &pick3[2];
+	strcpy ( p3->name, "Character 02" );
+	p3->cards[0] = -1;
+	p3->cards[1] = -1;
+	p3->cards[2] = -1;
+}
+
+void hand_pick3_cards ( ) {
 	struct pick3 *p3 = &pick3[0];
 	strcpy ( p3->name, "Taunts" );
 	p3->cards[0] = card_taunter;
 	p3->cards[1] = card_shieldMaster;
 	p3->cards[2] = card_taunter;
 
-
-printf ( "c\n" );
 
 	p3 = &pick3[1];
 	strcpy ( p3->name, "Killers" );
@@ -322,13 +409,33 @@ printf ( "c\n" );
 	p3->cards[2] = card_warrior;
 
 
-	p3 = &pick3[1];
+	p3 = &pick3[2];
 	strcpy ( p3->name, "Spells" );
 	p3->cards[0] = card_attacker;
 	p3->cards[1] = card_lvl2;
 	p3->cards[2] = card_warrior;
+}
 
-	printf ( "hand_make_cards ( ) OVER\n" );
+void hand_pick3_special ( ) {
+	struct pick3 *p3 = &pick3[0];
+	strcpy ( p3->name, "Taunts" );
+	p3->cards[0] = card_hat;
+	p3->cards[1] = -1;
+	p3->cards[2] = -1;
+
+
+	p3 = &pick3[1];
+	strcpy ( p3->name, "Killers" );
+	p3->cards[0] = card_torch;
+	p3->cards[1] = -1;
+	p3->cards[2] = -1;
+
+
+	p3 = &pick3[2];
+	strcpy ( p3->name, "Spells" );
+	p3->cards[0] = card_journal;
+	p3->cards[1] = -1;
+	p3->cards[2] = -1;
 }
 
 // this make a minion only
@@ -338,12 +445,16 @@ struct cardBase *make_card ( int mana, int atk, int hp, char *name ) {
 
 	struct cardBase *base = cardBaseInit ( );
 	int id = arrayListGetLength ( cardBaseList );
+
 	arrayListAddEndPointer ( cardBaseList, base );
 	base->card->id = id;
 	base->card->mana = mana;
+
 	cardTypeChange0 ( base->card, Minion );
-	base->card->minion->attack = atk;
-	base->card->minion->health = hp;
+	struct minionBase *minion = base->card->minion;
+	minion->attack = atk;
+	minion->health = hp;
+
 	strcpy ( base->name, name );
 
 	printf ( "make_card ( ) OVER\n" );
@@ -351,9 +462,11 @@ struct cardBase *make_card ( int mana, int atk, int hp, char *name ) {
 	return base;
 }
 
+// creates a card of type spell, with this name, and adds it to cardBaseList.
 struct cardBase *make_cardBase_spell ( char *name ) {
 	struct cardBase *base = cardBaseInit ( );
-	base->card->type = 1;	// TODO
+	cardTypeChange0 ( base->card, Spell );
+
 	int id = arrayListGetLength ( cardBaseList );
 	base->card->id = id;
 
@@ -361,18 +474,16 @@ struct cardBase *make_cardBase_spell ( char *name ) {
 
 	strcpy ( base->name, name );
 
-/*
-	base->mana = mana;
-	base->attack = atk;
-	base->health = hp;
-*/
 	return base;
 }
 
 
 // copy from the caseBaseList[id] to list.
 void copyCard_id ( ArrayList *list, int id ) {
-	printf ( "copyCard_id ( )\n" );
+	if ( debugPrint_oasis_copy ) {
+		printf ( "copyCard_id ( )\n" );
+	}
+
 
 	struct card *card = copyCard_base ( id );
 	if ( card == NULL ) {
@@ -381,7 +492,10 @@ void copyCard_id ( ArrayList *list, int id ) {
 	}
 	arrayListAddEndPointer ( list, card );
 
-	printf ( "copyCard_id ( ) OVER\n" );
+
+	if ( debugPrint_oasis_copy ) {
+		printf ( "copyCard_id ( ) OVER\n" );
+	}
 }
 
 struct card *copyCard_base ( int id ) {
@@ -396,54 +510,34 @@ struct card *copyCard_base ( int id ) {
 	struct card *card = cardInit ( );
 	card_copy ( card, base->card );
 
-/*
-	card->type = base->card->type;
-	card->id = id;
-
-	card->mana = base->mana;
-
-	if ( base->type == 0 ) {
-		// minion
-	card->attack = base->attack;
-	card->health = base->health;
-	card->numAttacks = -2;
-
-	int i = 0;
-	int len = arrayListGetLength ( base->modifiers );
-	while ( i < len ) {
-		struct cardMod *copy = arrayListGetPointer ( base->modifiers, i );
-		struct cardMod *newMod = cardMod_copy ( copy );
-		arrayListAddEndPointer ( card->mods, newMod );
-
-		i += 1;
-	}
-	} else if ( base->type == 1 ) {
-//		copySpell ( );
-	}
-*/
-
 	return card;
 }
 
 // sets cardA to cardB
 void card_copy ( struct card *cardA, struct card *cardB ) {
-	printf ( "card_copy ( )\n" );
+	if ( debugPrint_oasis_copy ) {
+		printf ( "card_copy ( )\n" );
+	}
 
 //	cardA->type = cardB->type;
 	cardA->id = cardB->id;
 	cardA->mana = cardB->mana;
 	cardTypeChange0 ( cardA, cardB->type );
-	if ( cardB->type == 0 ) {
+	if ( cardB->type == Minion ) {
 		copy_minionBase ( cardA->minion, cardB->minion );
-	} else if ( cardB->type == 1 ) {
-//		copySpell ( );
+	} else if ( cardB->type == Spell ) {
+//		copy_spell ( cardA->spell, cardB->spell );
 	}
 
-	printf ( "card_copy ( ) OVER\n" );
+	if ( debugPrint_oasis_copy ) {
+		printf ( "card_copy ( ) OVER\n" );
+	}
 }
 
 void copy_minionBase ( struct minionBase *baseA, struct minionBase *baseB ) {
-	printf ( "copy_minionBase ( )\n" );
+	if ( debugPrint_oasis_copy ) {
+		printf ( "copy_minionBase ( )\n" );
+	}
 
 	baseA->attack = baseB->attack;
 	baseA->health = baseB->health;
@@ -459,7 +553,6 @@ void copy_minionBase ( struct minionBase *baseA, struct minionBase *baseB ) {
 		i += 1;
 	}
 }
-
 
 // this should be autogenerated
 struct card *copyCard ( struct card *card ) {
@@ -490,8 +583,9 @@ struct card *copyCard ( struct card *card ) {
 
 
 struct cardMod *cardMod_copy ( struct cardMod *copy ) {
-	struct cardMod *var = malloc ( sizeof ( *var ) );
+	struct cardMod *var = cardModInit ( );
 	var->type = copy->type;
+	strcpy ( var->name, copy->name );
 
 	return var;
 }
@@ -555,6 +649,21 @@ void turn_change ( struct oasis_game *game ) {
 	printf ( "turn_change ( ) OVER\n" );
 }
 
+void turn_change_lobby_glob ( ) {
+	turn_change_lobby ( glob_oasis );
+}
+
+void turn_change_lobby ( struct oasis_game *game ) {
+	game->lobby_stage += 1;
+	if ( game->oasis_round == 0 ) {
+		// pre game
+		if ( game->lobby_stage == 5 ) {
+			game->oasis_stage = 1;
+		}
+	}
+}
+
+
 void startTurn_player ( struct player *player ) {
 	int drew = draw_player ( player );
 
@@ -577,8 +686,10 @@ void startTurn_player ( struct player *player ) {
 	}
 }
 
+
+
 void shuffle_to ( ArrayList *deck, ArrayList *deckTotal ) {
-//	printf ( "shuffle_to ( )\n" );
+	printf ( "shuffle_to ( )\n" );
 
 	// free deck
 	freeArrayListFunctionSave ( deck, (void(*)(void *))cardClose );
@@ -598,7 +709,11 @@ void shuffle_to ( ArrayList *deck, ArrayList *deckTotal ) {
 		struct card *cardTotal = arrayListGetPointer ( deckTotal, i );
 		struct card *card = copyCard ( cardTotal );
 
-//		printf ( "card coppied: %p\n", card );
+		if ( card->type == Minion ) {
+			card->minion->numAttacks = -2;
+		}
+
+		printf ( "card coppied: %p\n", card );
 		arrayListAddEndPointer ( deck, card );
 
 		i += 1;
@@ -618,11 +733,25 @@ void shuffle_to ( ArrayList *deck, ArrayList *deckTotal ) {
 		// swap r and i.
 		// i need to write an arraylist swap function.
 
+		void *iPtr = arrayListGetPointer ( deck, i );
+		void *rPtr = arrayListGetPointer ( deck, r );
+
 //		printf ( "swap ( %d, %d )\n", i, r );
 		arrayListSwap ( deck, i, r );
 
+		if ( iPtr != arrayListGetPointer ( deck, r ) ) {
+			printf ( "swap error a\n" );
+			exit ( 12 );
+		}
+		if ( rPtr != arrayListGetPointer ( deck, i ) ) {
+			printf ( "swap error b\n" );
+			exit ( 12 );
+		}
+
 		i -= 1;
 	}
+
+	say_myPlayer ( );
 
 //	sayPtrArrayList ( "deck post", deck );
 
@@ -676,7 +805,8 @@ printf ( "i: %d\n", i );
 					cardFound = 1;
 
 					// play the card
-play_hand_to_board ( player, i );
+int clickZone = 0;
+play_hand_to_board ( player, i, 0, clickZone );	// 0 for player, cuz this is from the enmies perspective?
 manaSearch = player->mana;
 					minionsPlayed += 1;
 					handLen -= 1;
@@ -729,6 +859,7 @@ int draw_player ( struct player *player ) {
 		// dont add to hand.
 		printf ( "delete drawn card\n" );
 	} else {
+		printf ( "drawn card: %p\n", card );
 		player->hand[handLen] = card;
 	}
 	return 0;
@@ -786,6 +917,8 @@ char *mod_to_str ( struct cardMod *mod ) {
 
 		strcpy ( modStr, "TODO" );
 	}
+
+	strcpy ( modStr, mod->name );
 
 	return modStr;
 }
@@ -860,11 +993,47 @@ void hand_oasis_save ( char *dir ) {
 
 
 
+/// say
+
+void say_myPlayer ( ) {
+	struct oasis_game *game = glob_oasis;
+	say_player ( game->player );
+}
+
+void say_player ( struct player *player ) {
+	printf ( "say_player ( )\n" );
+	printf ( "player: %p\n", player );
+
+	int i = 0;
+	int len = arrayListGetLength ( player->deckTotal );
+	printf ( "player->deckTotal.len: %d\n", len );
+	while ( i < len ) {
+		struct card *card = arrayListGetPointer ( player->deckTotal, i );
+
+		printf ( "card: %p\n", card );
+
+		i += 1;
+	}
+
+	i = 0;
+	len = arrayListGetLength ( player->deck );
+	printf ( "player->deck.len: %d\n", len );
+	while ( i < len ) {
+		struct card *card = arrayListGetPointer ( player->deck, i );
+
+		printf ( "card: %p\n", card );
+
+		i += 1;
+	}
+}
 
 
 
 
-
+struct cardBase *get_base_id ( int id ) {
+	struct cardBase *base = arrayListGetPointer ( cardBaseList, id );
+	return base;
+}
 
 
 

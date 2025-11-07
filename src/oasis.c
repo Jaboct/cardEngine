@@ -238,6 +238,7 @@ struct cardMod *cardModInit ( ) {
 }
 void cardModFill ( struct cardMod *var ) {
 	var->type = 0;
+	var->name[0] = '\0';
 }
 
 void *cardModInitMask ( ) {
@@ -251,6 +252,7 @@ void cardModClose ( struct cardMod *var ) {
 }
 int cardMod_attrib_arr[] = {
 	0,
+	0,
 };
 void cardModBodyToVal ( void *varPass, int nameI, char *body ) {
 
@@ -258,6 +260,8 @@ void cardModBodyToVal ( void *varPass, int nameI, char *body ) {
 
 	if ( nameI == 0 ) {
 		var->type = atoi ( body );
+	} else if ( nameI == 1 ) {
+		strcpy ( var->name, body );
 	}
 }
 
@@ -265,6 +269,8 @@ int cardModNameToIndex ( char *body, void *data, void *ret, char **strPtr, char 
 
 	if ( strcmp ( body, "type" ) == 0 ) {
 		return 0;
+	} else if ( strcmp ( body, "name" ) == 0 ) {
+		return 1;
 	}
 	return -1;
 }
@@ -382,7 +388,9 @@ struct spell *spellInit ( ) {
 void spellFill ( struct spell *var ) {
 	var->type = 0;
 	var->tar = targetingInit ( );
-	var->eff = spellEffectInit ( );
+	var->effList = initArrayList ( 10, sizeof ( struct spellEffect* ), 10 );
+	var->modName[0] = '\0';
+	var->discard = 0;
 }
 
 void *spellInitMask ( ) {
@@ -391,10 +399,14 @@ void *spellInitMask ( ) {
 
 }
 void spellClose ( struct spell *var ) {
+	if ( var->effList ) {
+		freeArrayListPointerFunction ( var->effList, (void (*)(void*))spellEffectClose );
+	}
 	free ( var );
 
 }
 int spell_attrib_arr[] = {
+	0,
 	0,
 	0,
 	0,
@@ -408,7 +420,8 @@ void spellBodyToVal ( void *varPass, int nameI, char *body ) {
 	} else if ( nameI == 1 ) {
 		// wont get called?
 	} else if ( nameI == 2 ) {
-		// wont get called?
+	} else if ( nameI == 3 ) {
+		strcpy ( var->modName, body );
 	}
 }
 
@@ -422,11 +435,12 @@ int spellNameToIndex ( char *body, void *data, void *ret, char **strPtr, char **
 		void **retPtr = ret;
 		*retPtr = &var->tar;
 		return jxnPtr;
-	} else if ( strcmp ( body, "eff" ) == 0 ) {
-		*strPtr = "spellEffect";
-		void **retPtr = ret;
-		*retPtr = &var->eff;
-		return jxnPtr;
+	} else if ( strcmp ( body, "effList" ) == 0 ) {
+		void **ptrPtr = (void**)ret;
+		*ptrPtr = var->effList;
+		return jxnAlPtr;
+	} else if ( strcmp ( body, "modName" ) == 0 ) {
+		return 3;
 	}
 	return -1;
 }
@@ -452,6 +466,9 @@ struct targeting *targetingInit ( ) {
 	return var;
 }
 void targetingFill ( struct targeting *var ) {
+	var->side = 0;
+	var->who = 0;
+	var->count = 0;
 }
 
 void *targetingInitMask ( ) {
@@ -464,14 +481,32 @@ void targetingClose ( struct targeting *var ) {
 
 }
 int targeting_attrib_arr[] = {
+	0,
+	0,
+	0,
 };
 void targetingBodyToVal ( void *varPass, int nameI, char *body ) {
 
+	struct targeting *var = varPass;
 
+	if ( nameI == 0 ) {
+		var->side = atoi ( body );
+	} else if ( nameI == 1 ) {
+		var->who = atoi ( body );
+	} else if ( nameI == 2 ) {
+		var->count = atoi ( body );
+	}
 }
 
 int targetingNameToIndex ( char *body, void *data, void *ret, char **strPtr, char **modName ) {
 
+	if ( strcmp ( body, "side" ) == 0 ) {
+		return 0;
+	} else if ( strcmp ( body, "who" ) == 0 ) {
+		return 1;
+	} else if ( strcmp ( body, "count" ) == 0 ) {
+		return 2;
+	}
 	return -1;
 }
 
@@ -499,7 +534,6 @@ void spellEffectFill ( struct spellEffect *var ) {
 	var->type = 0;
 	var->heal = 0;
 	var->dmg = 0;
-	var->mods = initArrayList ( 10, sizeof ( struct cardMod* ), 10 );
 }
 
 void *spellEffectInitMask ( ) {
@@ -508,14 +542,10 @@ void *spellEffectInitMask ( ) {
 
 }
 void spellEffectClose ( struct spellEffect *var ) {
-	if ( var->mods ) {
-		freeArrayListPointerFunction ( var->mods, (void (*)(void*))cardModClose );
-	}
 	free ( var );
 
 }
 int spellEffect_attrib_arr[] = {
-	0,
 	0,
 	0,
 	0,
@@ -530,23 +560,17 @@ void spellEffectBodyToVal ( void *varPass, int nameI, char *body ) {
 		var->heal = atoi ( body );
 	} else if ( nameI == 2 ) {
 		var->dmg = atoi ( body );
-	} else if ( nameI == 3 ) {
 	}
 }
 
 int spellEffectNameToIndex ( char *body, void *data, void *ret, char **strPtr, char **modName ) {
 
-	struct spellEffect *var = data;
 	if ( strcmp ( body, "type" ) == 0 ) {
 		return 0;
 	} else if ( strcmp ( body, "heal" ) == 0 ) {
 		return 1;
 	} else if ( strcmp ( body, "dmg" ) == 0 ) {
 		return 2;
-	} else if ( strcmp ( body, "mods" ) == 0 ) {
-		void **ptrPtr = (void**)ret;
-		*ptrPtr = var->mods;
-		return jxnAlPtr;
 	}
 	return -1;
 }
@@ -687,12 +711,15 @@ void playerClose ( struct player *var ) {
 	if ( var->deckTotal ) {
 		freeArrayListPointerFunction ( var->deckTotal, (void (*)(void*))cardClose );
 	}
+/*
 	if ( var->hand ) {
 		cardClose ( var->hand );
 	}
 	if ( var->board ) {
 		cardClose ( var->board );
 	}
+*/
+
 	free ( var );
 
 }

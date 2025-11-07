@@ -2,6 +2,66 @@
 <structStruct>
   <name>targeting</name>
   <vars>
+    <subVar>
+      <name>side</name>
+      <type>0</type>
+      <typeIndex>0</typeIndex>
+      <initType>0</initType>
+      <initTypeData>
+        <>-1</>
+      </initTypeData>
+      <closeType>0</closeType>
+      <length>-1</length>
+      <literal>1</literal>
+      <>-1</>
+      <external>0</external>
+      <attribute>0</attribute>
+      <saveFlag>1</saveFlag>
+      <naked>0</naked>
+      <comment>0: ally, 1: enemy, 2: either/both</comment>
+      <modNick></modNick>
+      <typeName></typeName>
+    </subVar>
+    <subVar>
+      <name>who</name>
+      <type>0</type>
+      <typeIndex>0</typeIndex>
+      <initType>0</initType>
+      <initTypeData>
+        <>-1</>
+      </initTypeData>
+      <closeType>0</closeType>
+      <length>-1</length>
+      <literal>1</literal>
+      <>-1</>
+      <external>0</external>
+      <attribute>0</attribute>
+      <saveFlag>1</saveFlag>
+      <naked>0</naked>
+      <comment>0: champ(s), 1: minions, 2: both, 3: random</comment>
+      <modNick></modNick>
+      <typeName></typeName>
+    </subVar>
+    <subVar>
+      <name>count</name>
+      <type>0</type>
+      <typeIndex>0</typeIndex>
+      <initType>0</initType>
+      <initTypeData>
+        <>-1</>
+      </initTypeData>
+      <closeType>0</closeType>
+      <length>-1</length>
+      <literal>1</literal>
+      <>-1</>
+      <external>0</external>
+      <attribute>0</attribute>
+      <saveFlag>1</saveFlag>
+      <naked>0</naked>
+      <comment>0, everyone, 1+ that many targets</comment>
+      <modNick></modNick>
+      <typeName></typeName>
+    </subVar>
   </vars>
   <overloadRenderEdit></overloadRenderEdit>
   <overloadEventEdit></overloadEventEdit>

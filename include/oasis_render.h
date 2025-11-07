@@ -12,6 +12,7 @@
 
 
 #include <jalb/jalbArrayList.h>
+#include <jalbDraw/jalbFont.h>
 
 
 /** Forward Declaring */
@@ -48,9 +49,13 @@ void oasis_cardBase_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, 
 void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 		char *name, int type, int mana, int attack, int health, int numAttacks, ArrayList *mods );
 
+void oasis_card_render_large ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
+		char *name, int type, int mana, int attack, int health, int numAttacks, ArrayList *mods );
 
 
-void text_in_circle ( int *screenDims, GLuint *glBuffers, int *XY, float *color, char *str );
+void text_in_circle ( int *screenDims, GLuint *glBuffers, int *XY, char *str,
+		float *circColor, float *fontColor,
+		struct jalbFont *font, int w );
 
 
 
@@ -64,3 +69,7 @@ void pick3_render_card ( int *screenDims, GLuint *glBuffers, int XYWH[], struct 
 
 
 int event_pick3 ( SDL_Event *e, int *clickXY, int *eleWH );
+
+
+
+void add_to_deck ( struct player *player, struct pick3 *pick );

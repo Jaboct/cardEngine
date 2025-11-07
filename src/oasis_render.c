@@ -174,6 +174,26 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 	};
 */
 
+/*
+	if ( player->hand[0] ) {
+		struct card *card = player->hand[0];
+		if ( card->type == Minion ) {
+			struct cardBase *base = get_base_id ( card->id );
+			struct minionBase *minion = card->minion;
+
+int XYWH[4] = {
+	100,
+	100,
+	cardW * 2,
+	cardH * 2,
+};
+
+			oasis_card_render_large ( screenDims, glBuffers, XYWH,
+				base->name, card->type, card->mana, minion->attack, minion->health, minion->numAttacks, minion->mods );
+return;
+		}
+	}
+*/
 
 	char buffer[256];
 	int slen;
@@ -476,15 +496,23 @@ void card_render_highlight ( int *screenDims, GLuint *glBuffers, int *XYWHpass )
 void oasis_card_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, struct card *card ) {
 	if ( debugPrint_oasisRender ) {
 		printf ( "oasis_card_render ( )\n" );
+		printf ( "card: %p\n", card );
+		printf ( "card->id: %d\n", card->id );
 	}
 
 	struct cardBase *base = arrayListGetPointer ( cardBaseList, card->id );
 	if ( base->card->type == Minion ) {
+//		struct minionBase *minion = card->minion;
+
 		oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
 			base->name, card->type, card->mana, card->minion->attack, card->minion->health, card->minion->numAttacks, card->minion->mods );
 	} else if ( base->card->type == Spell ) {
+//		struct spell *spell = card->spell;
+
+//		card->spell->eff->mods
+		int numAttacks = -2;
 		oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
-			base->name, card->type, card->mana, card->minion->attack, card->minion->health, card->minion->numAttacks, card->spell->eff->mods );
+			base->name, card->type, card->mana, card->minion->attack, card->minion->health, numAttacks, NULL );
 	}
 }
 
@@ -494,8 +522,21 @@ void oasis_cardBase_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, 
 	}
 
 //	struct card *card = base->card;
-	oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
-		base->name, base->card->type, base->card->mana, base->card->minion->attack, base->card->minion->health, -2, NULL );
+	if ( base ) {
+		if ( base->card->type == Minion ) {
+			oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
+				base->name, base->card->type, base->card->mana, base->card->minion->attack, base->card->minion->health, -2, NULL );
+		} else if ( base->card->type == Spell ) {
+			int attack = 0;
+			int health = 0;
+			oasis_card_render_base ( screenDims, glBuffers, XYWHpass,
+				base->name, base->card->type, base->card->mana, attack, health, -2, NULL );
+		}
+	}
+
+	if ( debugPrint_oasisRender ) {
+		printf ( "oasis_cardBase_render ( ) OVER\n" );
+	}
 }
 
 void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
@@ -578,28 +619,35 @@ void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 
 	draw2dApi->drawCharPre ( font, colorWhite );
 	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, buffer );
-	}
 
-
-	// -1, renders nothing
+	// numAttacks
+	// -2, renders nothing
 	if ( numAttacks == -1 ) {
 		// "ZZZ" in top right corner.
 		XYWH[0] = XYWHpass[0] + cardW - 2;
 		XYWH[1] = XYWHpass[1] + 2;
-		text_in_circle ( screenDims, glBuffers, XYWH, colorWhite, "Zzz" );
+		text_in_circle ( screenDims, glBuffers, XYWH, "Zz",
+			colorWhite, colorBlack,
+			font, w );
 	} else if ( numAttacks == 0 ) {
 		XYWH[0] = XYWHpass[0] + cardW - 2;
 		XYWH[1] = XYWHpass[1] + 2;
-		text_in_circle ( screenDims, glBuffers, XYWH, colorWhite, "Zzz" );
+		text_in_circle ( screenDims, glBuffers, XYWH, "Zz",
+			colorWhite, colorBlack,
+			font, w );
 	} else if ( numAttacks > 0 ) {
 		XYWH[0] = XYWHpass[0] + cardW - 2;
 		XYWH[1] = XYWHpass[1] + 2;
 
 		sprintf ( buffer, "%d", numAttacks );
 
-		text_in_circle ( screenDims, glBuffers, XYWH, colorLGreen, buffer );
+		text_in_circle ( screenDims, glBuffers, XYWH, buffer,
+			colorLGreen, colorBlack,
+			font, w );
 	}
 
+
+	}
 
 	// name
 	int glyphWH[2] = { font->atlasInfo.glyphW, font->atlasInfo.glyphH };
@@ -614,11 +662,17 @@ void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 	XYWH[1] += font->atlasInfo.glyphH;
 	int i = 0;
 	int numMods = arrayListGetLength ( mods );
-	printf ( "numMods: %d\n", numMods );
+
+//	printf ( "mod: %p\n", mods );
+//	printf ( "numMods: %d\n", numMods );
+
 	while ( i < numMods ) {
-		printf ( "i: %d\n", i );
+//		printf ( "i: %d\n", i );
 
 		struct cardMod *mod = arrayListGetPointer ( mods, i );
+
+//		printf ( "mod: %p\n", mod );
+//		printf ( "mod->name: %s\n", mod->name );
 
 		char *str = mod_to_str ( mod );
 		int slen = strlen ( str );
@@ -633,30 +687,230 @@ void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 	}
 
 	if ( debugPrint_oasisRender ) {
-		printf ( "oasis_card_render ( ) OVER\n" );
+		printf ( "oasis_card_render_base ( ) OVER\n" );
+	}
+}
+
+void oasis_card_render_large ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
+		char *name, int type, int mana, int attack, int health, int numAttacks, ArrayList *mods ) {
+	
+	if ( debugPrint_oasisRender ) {
+		printf ( "oasis_card_render_base ( )\n" );
+		printf ( "type: %d\n", type );
+	}
+//	sayIntArray ( "XYWHpass", XYWHpass, 4 );
+
+	int XYWH[4] = {
+		XYWHpass[0],
+		XYWHpass[1],
+		XYWHpass[2],
+		XYWHpass[3],
+	};
+
+	int cardW = XYWHpass[2];
+	int cardH = XYWHpass[3];
+
+	// scale with font?
+	float circ_w = 40;
+
+
+//	struct cardBase *base = arrayListGetPointer ( cardBaseList, card->id );
+
+	struct jalbFont *font = fonts[0];
+	struct jalbFont *font_l = fonts[1];
+	char buffer[256];
+
+	if ( type == 0 ) {
+		// minion.
+		draw2dApi->fillRect ( XYWH, colorGray, screenDims, glBuffers );
+	} else if ( type == 1 ) {
+		// spell
+		draw2dApi->fillRect ( XYWH, colorLBlue, screenDims, glBuffers );
+	}
+	draw2dApi->drawRect ( XYWH, colorBlack, screenDims, glBuffers );
+
+	// draw mana
+//	XYWH[0] += 2;
+//	XYWH[1] += 2;
+
+	XYWH[0] += font->atlasInfo.glyphW / 2;
+	XYWH[1] += font->atlasInfo.glyphH / 2;
+
+	sprintf ( buffer, "%d", mana );
+	text_in_circle ( screenDims, glBuffers, XYWH, buffer,
+		colorDBlue, colorBlack,
+		font_l, circ_w );
+/*
+	// put a blue circle behind this...
+	draw2dApi->fillCircle ( XYWH, w, colorDBlue, screenDims, glBuffers );
+	XYWH[0] -= font->atlasInfo.glyphW / 2;
+	XYWH[1] -= font->atlasInfo.glyphH / 2;
+
+	draw2dApi->drawCharPre ( font, colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, buffer );
+*/
+
+	if ( type == 0 ) {
+		// minion
+
+	// attack
+	XYWH[0] = XYWHpass[0] + 2;
+	XYWH[1] = XYWHpass[1] + cardH - 2;
+
+	sprintf ( buffer, "%d", attack );
+	text_in_circle ( screenDims, glBuffers, XYWH, buffer,
+		colorDYellow, colorBlack,
+		font_l, circ_w );
+/*
+	draw2dApi->fillCircle ( XYWH, w, colorDYellow, screenDims, glBuffers );
+	XYWH[0] -= font->atlasInfo.glyphW / 2;
+	XYWH[1] -= font->atlasInfo.glyphH / 2;
+
+	draw2dApi->drawCharPre ( font, colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, buffer );
+*/
+
+
+
+	// health
+	XYWH[0] = XYWHpass[0] + cardW - 2;
+	XYWH[1] = XYWHpass[1] + cardH - 2;
+
+	sprintf ( buffer, "%d", health );
+	text_in_circle ( screenDims, glBuffers, XYWH, buffer,
+		colorDRed, colorBlack,
+		font_l, circ_w );
+/*
+	draw2dApi->fillCircle ( XYWH, w, colorDRed, screenDims, glBuffers );
+	XYWH[0] -= font->atlasInfo.glyphW / 2;
+	XYWH[1] -= font->atlasInfo.glyphH / 2;
+
+	draw2dApi->drawCharPre ( font, colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, buffer );
+*/
+	}
+
+
+	// or render nothing cuz its a spell?
+	if ( numAttacks == -1 ) {
+		// "Zz" in top right corner.
+		XYWH[0] = XYWHpass[0] + cardW - 2;
+		XYWH[1] = XYWHpass[1] + 2;
+		text_in_circle ( screenDims, glBuffers, XYWH, "Zz",
+			colorWhite, colorBlack,
+			font_l, circ_w );
+	} else if ( numAttacks == 0 ) {
+		XYWH[0] = XYWHpass[0] + cardW - 2;
+		XYWH[1] = XYWHpass[1] + 2;
+		text_in_circle ( screenDims, glBuffers, XYWH, "Zz",
+			colorWhite, colorBlack,
+			font_l, circ_w );
+	} else if ( numAttacks > 0 ) {
+		XYWH[0] = XYWHpass[0] + cardW - 2;
+		XYWH[1] = XYWHpass[1] + 2;
+
+		sprintf ( buffer, "%d", numAttacks );
+
+		text_in_circle ( screenDims, glBuffers, XYWH, buffer,
+			colorLGreen, colorBlack,
+			font_l, circ_w );
+	}
+
+
+	// name (font_l)
+	int glyphWH[2] = { font->atlasInfo.glyphW, font->atlasInfo.glyphH };
+	int glyphWH_l[2] = { font_l->atlasInfo.glyphW, font_l->atlasInfo.glyphH };
+
+	sayIntArray ( "glyphWH", glyphWH, 2 );
+	sayIntArray ( "glyphWH_l", glyphWH_l, 2 );
+
+	int slen = strlen ( name );
+	XYWH[0] = centerX ( XYWHpass[0], XYWHpass[2], glyphWH_l[0], slen );
+	XYWH[1] = centerX ( XYWHpass[1], XYWHpass[3], glyphWH_l[1], 1 );
+	draw2dApi->drawCharPre ( font_l, colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font_l, name );
+
+	XYWH[1] += glyphWH_l[1];
+
+
+	// description
+//	char desc[1024];
+//	sprintf ( desc, "deal *2* damage to a minion and shuffle back into deck" );
+	// so i want font wrap?
+
+	char *l1 = "deal *2* damage to";
+	char *l2 = "a minion and shuffle";
+	char *l3 = "back into deck";
+	slen = strlen ( l1 );
+	XYWH[0] = centerX ( XYWHpass[0], XYWHpass[2], glyphWH[0], slen );
+//	XYWH[1] = centerX ( XYWHpass[1], XYWHpass[3], glyphWH[1], 1 );
+	draw2dApi->drawCharPre ( font, colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, l1 );
+	XYWH[1] += glyphWH[1];
+
+	slen = strlen ( l2 );
+	XYWH[0] = centerX ( XYWHpass[0], XYWHpass[2], glyphWH[0], slen );
+//	XYWH[1] = centerX ( XYWHpass[1], XYWHpass[3], glyphWH[1], 1 );
+	draw2dApi->drawCharPre ( font, colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, l2 );
+	XYWH[1] += glyphWH[1];
+
+	slen = strlen ( l3 );
+	XYWH[0] = centerX ( XYWHpass[0], XYWHpass[2], glyphWH[0], slen );
+//	XYWH[1] = centerX ( XYWHpass[1], XYWHpass[3], glyphWH[1], 1 );
+	draw2dApi->drawCharPre ( font, colorWhite );
+	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, l3 );
+	XYWH[1] += glyphWH[1];
+
+
+	// modifierss
+	int i = 0;
+	int numMods = arrayListGetLength ( mods );
+
+//	printf ( "mod: %p\n", mods );
+//	printf ( "numMods: %d\n", numMods );
+
+	while ( i < numMods ) {
+//		printf ( "i: %d\n", i );
+
+		struct cardMod *mod = arrayListGetPointer ( mods, i );
+
+//		printf ( "mod: %p\n", mod );
+//		printf ( "mod->name: %s\n", mod->name );
+
+		char *str = mod_to_str ( mod );
+		int slen = strlen ( str );
+
+		XYWH[0] = centerX ( XYWHpass[0], XYWHpass[2], glyphWH[0], slen );
+		XYWH[1] += font->atlasInfo.glyphH;
+
+		draw2dApi->drawCharPre ( font, colorBlack );
+		draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, str );
+
+		i += 1;
+	}
+
+	if ( debugPrint_oasisRender ) {
+		printf ( "oasis_card_render_base ( ) OVER\n" );
 	}
 }
 
 
 
-
-void text_in_circle ( int *screenDims, GLuint *glBuffers, int *XY, float *color, char *str ) {
-	struct jalbFont *font = fonts[0];
-
+void text_in_circle ( int *screenDims, GLuint *glBuffers, int *XY, char *str,
+		float *circColor, float *fontColor,
+		struct jalbFont *font, int w ) {
 	int XYWH[4] = {
 		XY[0],
 		XY[1],
 	};
 
-	float w = 20;
-
-	draw2dApi->fillCircle ( XYWH, w, color, screenDims, glBuffers );
-	XYWH[0] -= font->atlasInfo.glyphW / 2;
+	int slen = strlen ( str );
+	draw2dApi->fillCircle ( XYWH, w, circColor, screenDims, glBuffers );
+	XYWH[0] -= font->atlasInfo.glyphW / 2 * slen;
 	XYWH[1] -= font->atlasInfo.glyphH / 2;
 
-//	sprintf ( buffer, "%d", card->health );
-
-	draw2dApi->drawCharPre ( font, colorWhite );
+	draw2dApi->drawCharPre ( font, fontColor );
 	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, str );
 }
 
@@ -707,8 +961,47 @@ void render_pick3 ( int *screenDims, GLuint *glBuffers ) {
 	struct player *player = game->player;
 //	struct player *enemy = game->enemy;
 
-
 	struct jalbFont *font = fonts[0];
+	char buffer[1024];
+
+
+	int textXYWH[4] = {
+		10,
+		10,
+		1000,
+		1000,
+	};
+	draw2dApi->drawCharPre ( font, colorWhite );
+	sprintf ( buffer, "pick 3, (round: %d) (lobby: %d)", game->oasis_stage, game->lobby_stage );
+	draw2dApi->drawString ( screenDims, glBuffers, textXYWH, font, buffer );
+	textXYWH[1] += font->atlasInfo.glyphH;
+
+	buffer[0] = '\0';
+	if ( game->oasis_stage == 0 ) {
+		if ( game->lobby_stage == 0 ) {
+			sprintf ( buffer, "pick character\n" );
+		} else if ( game->lobby_stage == 1 ) {
+			sprintf ( buffer, "pick ability\n" );
+		} else if ( game->lobby_stage == 2 ) {
+			sprintf ( buffer, "pick card\n" );
+		} else if ( game->lobby_stage == 3 ) {
+			sprintf ( buffer, "pick deck\n" );
+		} else if ( game->lobby_stage == 4 ) {
+			sprintf ( buffer, "start game\n" );
+		}
+	} else {
+		if ( game->lobby_stage == 0 ) {
+			sprintf ( buffer, "pick card pack\n" );
+		} else if ( game->lobby_stage == 1 ) {
+			// TODO this is only true sometimes/
+			sprintf ( buffer, "pick passive ability\n" );
+		} else if ( game->lobby_stage == 2 ) {
+			sprintf ( buffer, "start game\n" );
+		}
+	}
+	draw2dApi->drawString ( screenDims, glBuffers, textXYWH, font, buffer );
+	textXYWH[1] += font->atlasInfo.glyphH;
+
 
 	struct pick3 *p3 = &pick3[0];
 
@@ -726,15 +1019,26 @@ void render_pick3 ( int *screenDims, GLuint *glBuffers ) {
 	}
 	pick3_render_card ( screenDims, glBuffers, XYWH, p3 );
 
-	p3 = &pick3[1];
-	XYWH[1] += XYWH[3] + cardGap;
 
+	XYWH[1] += XYWH[3] + cardGap;
+	p3 = &pick3[1];
 	if ( row3_cursor == 2 ) {
 		draw2dApi->drawRect ( XYWH, colorOrange, screenDims, glBuffers );
 	} else {
 		draw2dApi->drawRect ( XYWH, colorWhite, screenDims, glBuffers );
 	}
 	pick3_render_card ( screenDims, glBuffers, XYWH, p3 );
+
+
+	XYWH[1] += XYWH[3] + cardGap;
+	p3 = &pick3[2];
+	if ( row3_cursor == 3 ) {
+		draw2dApi->drawRect ( XYWH, colorOrange, screenDims, glBuffers );
+	} else {
+		draw2dApi->drawRect ( XYWH, colorWhite, screenDims, glBuffers );
+	}
+	pick3_render_card ( screenDims, glBuffers, XYWH, p3 );
+
 
 
 	// on the right, render my cards.
@@ -758,7 +1062,7 @@ void render_pick3 ( int *screenDims, GLuint *glBuffers ) {
 	struct cardBase *base = arrayListGetPointer ( cardBaseList, card->id );
 	int coppies = 1;
 
-	char buffer[1024];
+
 	sprintf ( buffer, "%dx %s (%d)", coppies, base->name, card->mana );
 
 //	printf ( "buffer: %s\n", buffer );
@@ -777,8 +1081,12 @@ void render_pick3 ( int *screenDims, GLuint *glBuffers ) {
 	XYWH[3] = pick3_button[3];
 	draw2dApi->fillRect ( XYWH, colorDGray, screenDims, glBuffers );
 
-	char buffer[256];
-	sprintf ( buffer, "select" );
+	if ( game->oasis_round == 0 &&
+	     game->lobby_stage == 4 ) {
+		sprintf ( buffer, "start" );
+	} else {
+		sprintf ( buffer, "select" );
+	}
 	int slen = strlen ( buffer );
 	XYWH[0] = centerX ( XYWH[0], XYWH[2], slen, font->atlasInfo.glyphW );
 	XYWH[1] = centerX ( XYWH[1], XYWH[3], 1, font->atlasInfo.glyphH );
@@ -790,6 +1098,9 @@ void render_pick3 ( int *screenDims, GLuint *glBuffers ) {
 }
 
 void pick3_render_card ( int *screenDims, GLuint *glBuffers, int XYWHpass[], struct pick3 *p3 ) {
+//	printf ( "pick3_render_card ( )\n" );
+
+
 	struct jalbFont *font = fonts[0];
 
 	int XYWH[4] = {
@@ -807,20 +1118,48 @@ void pick3_render_card ( int *screenDims, GLuint *glBuffers, int XYWHpass[], str
 
 	XYWH[0] += cardGap / 2;
 	XYWH[1] += font->atlasInfo.glyphH + 4;
-	struct cardBase *base = arrayListGetPointer ( cardBaseList, p3->cards[0] );
-	oasis_cardBase_render ( screenDims, glBuffers, XYWH, base );
+	struct cardBase *base = NULL;
+	if ( p3->cards[0] >= 0 ) {
+		base = arrayListGetPointer ( cardBaseList, p3->cards[0] );
+		oasis_cardBase_render ( screenDims, glBuffers, XYWH, base );
+	}
 	XYWH[0] += cardW + cardGap;
 
-	base = arrayListGetPointer ( cardBaseList, p3->cards[1] );
-	oasis_cardBase_render ( screenDims, glBuffers, XYWH, base );
+	if ( p3->cards[1] >= 0 ) {
+		base = arrayListGetPointer ( cardBaseList, p3->cards[1] );
+		oasis_cardBase_render ( screenDims, glBuffers, XYWH, base );
+	}
 	XYWH[0] += cardW + cardGap;
 
-	base = arrayListGetPointer ( cardBaseList, p3->cards[2] );
-	oasis_cardBase_render ( screenDims, glBuffers, XYWH, base );
+	if ( p3->cards[2] >= 0 ) {
+		base = arrayListGetPointer ( cardBaseList, p3->cards[2] );
+		oasis_cardBase_render ( screenDims, glBuffers, XYWH, base );
+	}
+
+//	printf ( "pick3_render_card ( ) OVER\n" );
 }
 
 int event_pick3 ( SDL_Event *e, int *clickXY, int *eleWH ) {
 //	struct jalbFont *font = fonts[0];
+
+	struct oasis_game *game = glob_oasis;
+
+
+
+	if ( e->type == SDL_KEYDOWN ) {
+		if ( e->key.keysym.sym == SDLK_1 ) {
+			row3_cursor = 1;
+			return 1;
+		} else if ( e->key.keysym.sym == SDLK_2 ) {
+			row3_cursor = 2;
+			return 1;
+		} else if ( e->key.keysym.sym == SDLK_3 ) {
+			row3_cursor = 3;
+			return 1;
+		}
+		return 0;
+	}
+
 
 	int XYWH[4] = {
 		row0[0],
@@ -828,8 +1167,6 @@ int event_pick3 ( SDL_Event *e, int *clickXY, int *eleWH ) {
 		row0[2],
 		row0[3],
 	};
-
-	row3_cursor = 0;
 
 	// DOM
 	if ( inBox ( clickXY, XYWH ) ) {
@@ -839,6 +1176,7 @@ int event_pick3 ( SDL_Event *e, int *clickXY, int *eleWH ) {
 		return 1;
 	}
 
+
 	XYWH[1] += XYWH[3] + cardGap;
 	if ( inBox ( clickXY, XYWH ) ) {
 		printf ( "click on pick 3 row 1\n" );
@@ -847,21 +1185,107 @@ int event_pick3 ( SDL_Event *e, int *clickXY, int *eleWH ) {
 		return 1;
 	}
 
+
+	XYWH[1] += XYWH[3] + cardGap;
+	if ( inBox ( clickXY, XYWH ) ) {
+		printf ( "click on pick 3 row 2\n" );
+		row3_cursor = 3;
+
+		return 1;
+	}
+
+
 	XYWH[0] = pick3_button[0];
 	XYWH[1] = pick3_button[1];
 	XYWH[2] = pick3_button[2];
 	XYWH[3] = pick3_button[3];
 	if ( inBox ( clickXY, XYWH ) ) {
 		printf ( "click pick3 button\n" );
+		printf ( "row3_cursor: %d\n", row3_cursor );
+
+		if ( game->oasis_round == 0 ) {
+			if ( game->lobby_stage == 4 ) {
+				printf ( "started game\n" );
+
+				game->oasis_stage = 1;
+			}
+		}
+
 		if ( row3_cursor > 0 ) {
 			// add these cards to the deck and move onto the next boss.
+
+			if ( game->oasis_round == 0 ) {
+				if ( game->lobby_stage == 0 ) {
+					printf ( "selected character\n" );
+
+					// swap the pick 3
+
+					game->lobby_stage += 1;
+					row3_cursor = 0;
+					return 1;
+
+				} else if ( game->lobby_stage == 1 ) {
+					printf ( "selected character ability\n" );
+
+					game->lobby_stage += 1;
+					row3_cursor = 0;
+
+					hand_pick3_special ( );
+
+					return 1;
+
+				} else if ( game->lobby_stage == 2 ) {
+					printf ( "selected special card\n" );
+
+					add_to_deck ( game->player, &pick3[row3_cursor-1] );
+
+					game->lobby_stage += 1;
+					row3_cursor = 0;
+
+					hand_pick3_cards ( );
+
+					return 1;
+
+				} else if ( game->lobby_stage == 3 ) {
+					printf ( "selected deck\n" );
+
+					add_to_deck ( game->player, &pick3[row3_cursor-1] );
+
+					game->lobby_stage += 1;
+					row3_cursor = 0;
+					return 1;
+
+				} else {
+					printf ( "unknown type\n" );
+				}
+			}
 		}
 	}
 
 
+	row3_cursor = 0;
+
 	return 0;
 }
 
+void add_to_deck ( struct player *player, struct pick3 *pick ) {
+	printf ( "add_to_deck ( )\n" );
+	printf ( "pick: %p\n", pick );
+	sayIntArray ( "pick->cards", pick->cards, 3 );
+
+	if ( pick->cards[0] >= 0 ) {
+		copyCard_id ( player->deckTotal, pick->cards[0] );	
+	}
+	if ( pick->cards[1] >= 0 ) {
+		copyCard_id ( player->deckTotal, pick->cards[1] );
+	}
+	if ( pick->cards[2] >= 0 ) {
+		copyCard_id ( player->deckTotal, pick->cards[2] );
+	}
+
+	// iterate through and print deckTotal
+	say_player ( player );
+}
 
 
 

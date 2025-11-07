@@ -42,8 +42,8 @@ void *get_backbone_arr ( ) {
 	return backbone_arr_cardEngine;
 }
 int num_projectVars_cardEngine = 1;
-
-/*extern out of range (type: 0) (typeIndex: -1) modifierList;
+/*
+extern out of range (type: 0) (typeIndex: -1) modifierList;
 
 struct backbone_projectVar proj_modifierList = {
 	{
@@ -61,7 +61,6 @@ struct backbone_projectVar proj_modifierList = {
 	},
 	.data = &modifierList,
 };
-
 */
 struct backbone_projectVar *projectVar_arr_cardEngine[] = {
 //	&proj_modifierList,

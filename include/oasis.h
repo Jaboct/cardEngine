@@ -47,12 +47,21 @@ struct cardMod {
 	// 1 heal?
 	// 2 damage?
 	int type;
+	char name[256];
 };
 
 struct oasis_game {
+	// 0 = in a lobby,
+	// 1 = in a game
 	int oasis_stage;
+	// 0 = first pick 3,
+	// 1 = second pick 3 (if there is one)
+	// 2, about to start game (hit play button?)
 	int lobby_stage;
+	// just keeps track of many bosses you have beat
 	int oasis_round;
+	// 0 player,
+	// 1 enemy
 	int oasis_turn;
 	struct player *enemy;
 	struct player *player;
@@ -61,17 +70,24 @@ struct oasis_game {
 struct spell {
 	int type;
 	struct targeting *tar;
-	struct spellEffect *eff;
+	ArrayList *effList;	// (struct spellEffect*)
+	char modName[256];
+	int discard;
 };
 
 struct targeting {
+	// 0: ally, 1: enemy, 2: either/both
+	int side;
+	// 0: champ(s), 1: minions, 2: both, 3: random
+	int who;
+	// 0, everyone, 1+ that many targets
+	int count;
 };
 
 struct spellEffect {
 	int type;
 	int heal;
 	int dmg;
-	ArrayList *mods;	// (struct cardMod*)
 };
 
 struct minionBase {
