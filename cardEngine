@@ -24,14 +24,15 @@ Dir:
 /home/jadeb/workspace/jHigh/cardEngine/include/
 /home/jadeb/workspace/jHigh/cardEngine/
 /home/jadeb/workspace/jHigh/testEnv/lay/
-MODCORE_DIR
+/home/jadeb/programs/modCore/
 
 
 Text:
 /home/jadeb/workspace/jHigh/cardEngine/makefile
 /home/jadeb/workspace/jHigh/cardEngine/lay/cardEngine
-/home/jadeb/workspace/jHigh/cardEngine/src/mod.c
-/home/jadeb/workspace/jHigh/cardEngine/include/mod.h
+/home/jadeb/workspace/jHigh/cardEngine/src/oasis_hand.c
+#/home/jadeb/workspace/jHigh/cardEngine/src/mod.c
+#/home/jadeb/workspace/jHigh/cardEngine/include/mod.h
 
 
 

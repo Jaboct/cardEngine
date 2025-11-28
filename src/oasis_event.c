@@ -108,9 +108,10 @@ int oasis_game_event ( SDL_Event *e, int *clickXY, int *eleWH, void *data ) {
 // for minions, am i clicking, idk lets call it left or right of a card (including on the card, split 50% of the way throught it horizontally)
 
 			int clickZone = get_clickZone ( clickXY, fullBoard );
-			int board = 0;
+			int board = board_allyMin;
 
-			play_hand_to_board ( player, oasis_cursor - oasis_cursor_hand, board, clickZone );
+			int handI = oasis_cursor - oasis_cursor_hand;
+			play_hand_to_board ( player, handI, board, clickZone );
 
 			oasis_cursor = 0;
 		} else if ( oasis_cursor == 0 ) {
@@ -151,16 +152,28 @@ sayIntArray ( "cardXYWH", cardXYWH, 4 );
 	if ( inBox ( clickXY, fullBoard ) ) {
 		printf ( "clicked on enemy board\n" );
 
+		int clickZone = get_clickZone ( clickXY, fullBoard );
+		int board = board_enemyMin;
+
 		// if the card i have selected is on my board
 		if ( oasis_cursor >= oasis_cursor_board &&
 		     oasis_cursor <= oasis_cursor_board_end ) {
 			// i have a board minion selected, it might attack.
 			int enemyIndex = board_click_index ( enemy, clickXY, fullBoard );
+			printf ( "enemyIndex: %d\n", enemyIndex );
 			if ( enemyIndex > -1 ) {
 				printf ( "attack enemy: %d\n", enemyIndex );
 				int attackIndex = oasis_cursor - oasis_cursor_board;
 				card_attack ( player, enemy, attackIndex, enemyIndex );
 			}
+		} else if ( oasis_cursor >= oasis_cursor_hand &&
+			    oasis_cursor < oasis_cursor_board ) {
+			// the card i have selected is in my hand (a spell to cast on an enemy)
+			printf ( "hand card selected\n" );
+
+			int handI = oasis_cursor - oasis_cursor_hand;
+			click_enemy_board ( player, enemy, handI, board, clickZone );
+
 		}
 	}
 
@@ -173,6 +186,9 @@ sayIntArray ( "cardXYWH", cardXYWH, 4 );
 	};
 	if ( inBox ( clickXY, charRect ) ) {
 		// if the card i have selected is on my board
+
+		int board = board_enemyChamp;
+
 		if ( oasis_cursor >= oasis_cursor_board &&
 		     oasis_cursor <= oasis_cursor_board_end ) {
 			// then deal dmg
@@ -181,6 +197,17 @@ sayIntArray ( "cardXYWH", cardXYWH, 4 );
 			struct card *attackCard = player->board[attackIndex];
 
 			enemy->health -= attackCard->minion->attack;
+			// this needs exhaustion, so do like...
+			// enemyAtkConsume() or something, idk.
+
+		} else if ( oasis_cursor >= oasis_cursor_hand &&
+			    oasis_cursor < oasis_cursor_board ) {
+			// The card i have selected is in my hand (a spell to cast on the enemy champ)
+
+			int handI = oasis_cursor - oasis_cursor_hand;
+			int clickZone = -1;	// irrelevent
+
+			click_enemy_board ( player, enemy, handI, board, clickZone );
 		}
 	}
 
@@ -229,6 +256,9 @@ int get_clickZone ( int *clickXYpass, int *fullBoard ) {
 /// TODO, similar to above.
 // doesnt simply return the index, it also makes sure a minion exists there.
 int board_click_index ( struct player *player, int *clickXY, int *boardXYWH ) {
+	printf ( "board_click_index ( )\n" );
+	sayIntArray ( "clickXY", clickXY, 2 );
+	sayIntArray ( "boardXYWH", boardXYWH, 4 );
 
 	int cardXYWH[4] = {
 		boardXYWH[0] + cardGap / 2,
@@ -252,6 +282,51 @@ int board_click_index ( struct player *player, int *clickXY, int *boardXYWH ) {
 		i += 1;
 	}
 	return -1;
+}
+
+// used when one of my cards is selected, and i want to 
+void click_enemy_board ( struct player *player, struct player *enemy, int handI, int board, int clickZone ) {
+
+	struct card *handCard = player->hand[handI];
+	if ( player->mana >= handCard->mana ) {
+		printf ( "enough mana to play from hand\n" );
+	} else {
+		// not enough mana to play
+		printf ( "not enough mana to play\n" );
+		return;
+	}
+
+	int played = 0;
+
+	struct cardBase *base = NULL;
+
+	if ( handCard->type == Minion ) {
+		// does nothing, i cant play my minion to their side of the board.s
+	} else if ( handCard->type == Spell ) {
+		base = get_base_id ( handCard->id );
+
+		played = play_spell ( base->card, board, clickZone );
+	}
+
+	if ( played ) {
+		shrink_array ( player->hand, handI, HAND_MAX );
+		player->mana -= handCard->mana;
+
+		if ( base->card->spell->discard == discard_shuf_playDeck ) {
+			shuffle_into_deck ( handCard, player->deck );
+		}
+	}
+
+/*
+	int boardLen = get_board_len ( player );
+	if ( boardLen < BOARD_MAX ) {
+
+	} else {
+		printf ( "board full\n" );
+		return;
+	}
+*/
+
 }
 
 // for for the player only.
@@ -299,9 +374,14 @@ void play_hand_to_board ( struct player *player, int handI, int board, int click
 //		printf ( "base->card->spell->discard: %d\n", base->card->spell->discard );
 
 		played = play_spell ( base->card, board, clickZone );
-		if ( base->card->spell->discard == discard_shuf_playDeck ) {
-			shuffle_into_deck ( handCard, player->deck );
+		if ( played ) {
+			player->mana -= handCard->mana;
+
+			if ( base->card->spell->discard == discard_shuf_playDeck ) {
+				shuffle_into_deck ( handCard, player->deck );
+			}
 		}
+
 /*
 		if ( boardLen > minionIndex ) {
 			player->mana -= handCard->mana;
@@ -333,6 +413,9 @@ void shuffle_into_deck ( struct card *card, ArrayList *deck ) {
 }
 
 // board 0 is enemy, 1 is player.
+// what does that mean? when its 0 it means i am clicking on the player?
+// TODO, make this agnostic from who is casting it.
+// i want the enemy to be able to use this aswell, except they dont need click zone, that shit gets confirmed before the spell is even selected.
 int play_spell ( struct card *card, int board, int clickZone ) {
 	printf ( "play_spell ( )\n" );
 	printf ( "board: %d\n", board );
@@ -348,14 +431,40 @@ int play_spell ( struct card *card, int board, int clickZone ) {
 	printf ( "target->side: %d\n", target->side );
 
 
+	/// TODO clean up this fucking mess
+
+	// 2 things to do.
+	// 1: is this click valid.
+	// if so
+	// 2: apply this spell
+	if ( board == board_enemyChamp ) {
+
+		struct player *tarChamp = game->enemy;
+
+		if ( target->side == tarS_enemy ||
+		     target->side == tarS_either ) {
+
+			if ( target->count == target_everyone ) {
+				printf ( "TODO enemy champ, target_everyone\n" );
+			} else if ( target->count == target_num ) {
+				// apply this to the enemy champ.
+				apply_spell_champ ( spell, tarChamp );
+				return 1;
+			} else {
+				printf ( "TODO enemy champ, > target_num\n" );
+			}
+		}
+	}
+
+
 	if ( target->count == target_everyone ) {
 		printf ( "target everyone\n" );
-		if ( target->side == tar_aly ||
-		     target->side == tar_either ) {
+		if ( target->side == tarS_ally ||
+		     target->side == tarS_either ) {
 			// apply to all alies
 		}
-		if ( target->side == tar_enemy ||
-		     target->side == tar_either ) {
+		if ( target->side == tarS_enemy ||
+		     target->side == tarS_either ) {
 			// apply to all enemies.
 		}
 
@@ -370,16 +479,17 @@ int play_spell ( struct card *card, int board, int clickZone ) {
 			printf ( "TODO apply random spell\n" );
 		}
 
-		if ( target->side == tar_aly ) {
+		if ( target->side == tarS_ally ) {
 			printf ( "case on aly\n" );
-			if ( board == 0 ) {
+			if ( board == board_allyMin ) {
 				// cast on aly.
 
 				int minionIndex = clickZone / 3;
 				int numAlyBoard = get_board_len ( game->player );
-printf ( "single target aly\n" );
-printf ( "minionIndex: %d\n", minionIndex );
-printf ( "numAlyBoard: %d\n", numAlyBoard );
+
+				printf ( "single target aly\n" );
+				printf ( "minionIndex: %d\n", minionIndex );
+				printf ( "numAlyBoard: %d\n", numAlyBoard );
 
 
 
@@ -388,11 +498,36 @@ printf ( "numAlyBoard: %d\n", numAlyBoard );
 					return 1;
 				}
 			}
-		} else if ( target->side == tar_enemy ) {
-			if ( board == 1 ) {
+		} else if ( target->side == tarS_enemy ) {
+			printf ( "spell target enemy\n" );
+			if ( board == board_enemyMin ) {
 				// cast on enemy.
+
+				int tarNum = target_num - target->count;
+				printf ( "tarNum: %d\n", tarNum );
+
+				if ( tarNum == 0 ) {	// 1 enemy
+					// figure which mininion i am clicking on.
+
+					struct player *tarChamp = game->enemy;
+
+					int minionIndex = clickZone / 3;
+					int boardLen = get_board_len ( tarChamp );
+					// right now on the board there can only be minions, in hearthstone there are also...
+					// dormant minions, and locations.
+
+					if ( minionIndex < boardLen ) {
+						apply_spell_minion ( spell, tarChamp->board[minionIndex] );
+						return 1;
+					}
+
+				} else {
+					printf ( "unhandled tarNum: %d\n", tarNum );
+					// TODO
+				}
+
 			}
-		} else if ( target->side == tar_either ) {
+		} else if ( target->side == tarS_either ) {
 			// cast on click
 		}
 	}
@@ -404,6 +539,9 @@ void apply_spell_minion ( struct spell *spell, struct card *minion ) {
 
 	int i = 0;
 	int len = arrayListGetLength ( spell->effList );
+
+	printf ( "spell->effList.len: %d\n", len );
+
 	while ( i < len ) {
 		struct spellEffect *eff = arrayListGetPointer ( spell->effList, i );
 
@@ -426,19 +564,61 @@ void apply_spellEffect_minion ( struct spellEffect *eff, struct card *minion ) {
 	printf ( "apply_spellEffect_minion ( )\n" );
 	printf ( "eff->type: %d\n", eff->type );
 
-	if ( eff->type == eff_buffHp ) {
+	if ( eff->type == eff_dmg ) {
+		minion->minion->health -= eff->dmg;
+
+	} else if ( eff->type == eff_buffHp ) {
 		minion->minion->health += eff->heal;
 //		minion->minion->maxHp += 2;
+
 	} else if ( eff->type == eff_buffAtk ) {
 		minion->minion->attack += eff->heal;
 		
 	} else {
 		printf ( "ERROR, apply_spellEffect_minion ( )\n" );
+
 	}
 
 	printf ( "apply_spellEffect_minion ( ) OVER\n" );
 }
 
+void apply_spell_champ ( struct spell *spell, struct player *player ) {
+
+	int i = 0;
+	int len = arrayListGetLength ( spell->effList );
+
+	printf ( "spell->effList.len: %d\n", len );
+
+	while ( i < len ) {
+		struct spellEffect *eff = arrayListGetPointer ( spell->effList, i );
+
+		apply_spellEffect_champ ( eff, player );
+
+		i += 1;
+	}
+/*
+	struct cardMod *mod = cardModInit ( );
+	strcpy ( mod->name, spell->modName );
+
+	mod->type = eff_buffHp;
+	arrayListAddEndPointer ( minion->minion->mods, mod );
+*/
+}
+
+void apply_spellEffect_champ ( struct spellEffect *eff, struct player *player ) {
+	if ( eff->type == eff_dmg ) {
+		player->health -= eff->dmg;
+
+	} else if ( eff->type == eff_buffHp ) {
+		player->health += eff->heal;
+
+//	} else if ( eff->type == eff_buffAtk ) {
+//		player->attack += eff->heal;
+		
+	} else {
+		printf ( "ERROR, apply_spellEffect_minion ( )\n" );
+	}
+}
 
 
 // i am removing card at arr[i], so shift everything at an index above that, left by 1.

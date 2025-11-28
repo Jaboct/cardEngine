@@ -29,7 +29,8 @@ extern float colorOrange[];
 
 float colorTan[4] = { 0.8, 0.6, 0.4, 1.0 };
 float colorDYellow[4] = { 0.8, 0.8, 0.0, 1.0 };
-float colorDBlue[4] = { 0.0, 0.8, 0.8, 1.0 };	// actually cyan rn
+float colorCyan[4] = { 0.0, 0.8, 0.8, 1.0 };
+float colorDBlue[4] = { 0.0, 0.2, 1.0, 1.0 };
 float colorDRed[4] = { 0.8, 0.0, 0.0, 1.0 };
 float colorLBlue[4] = { 0.6, 0.6, 1.0, 1.0 };
 float colorLGreen[4] = { 0.6, 1.0, 0.6, 1.0 };
@@ -92,6 +93,7 @@ int playerBoardXY[2];
 int enemyBoardXY[2];
 
 
+int oasis_renderLargeDevCard = 0;
 
 
 
@@ -139,6 +141,29 @@ void oasis_assemble_dom ( int *XYWHpass ) {
 	sayIntArray ( "enemyBoardXY", enemyBoardXY, 2 );
 }
 
+void oasis_dev_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, struct player *player ) {
+	// render a large card in the center of the screen.
+	// for development
+	if ( player->hand[0] ) {
+		struct card *card = player->hand[0];
+		if ( card->type == Minion ) {
+			struct cardBase *base = get_base_id ( card->id );
+			struct minionBase *minion = card->minion;
+
+			int XYWH[4] = {
+				100,
+				100,
+				cardW * 2,
+				cardH * 2,
+			};
+
+			oasis_card_render_large ( screenDims, glBuffers, XYWH,
+				base->name, card->type, card->mana, minion->attack, minion->health, minion->numAttacks, minion->mods );
+			return;
+		}
+	}
+}
+
 void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void *data ) {
 	if ( debugPrint_oasisRender ) {
 		printf ( "oasis_game_render ( )\n" );
@@ -174,26 +199,10 @@ void oasis_game_render ( int *screenDims, GLuint *glBuffers, int *XYWHpass, void
 	};
 */
 
-/*
-	if ( player->hand[0] ) {
-		struct card *card = player->hand[0];
-		if ( card->type == Minion ) {
-			struct cardBase *base = get_base_id ( card->id );
-			struct minionBase *minion = card->minion;
-
-int XYWH[4] = {
-	100,
-	100,
-	cardW * 2,
-	cardH * 2,
-};
-
-			oasis_card_render_large ( screenDims, glBuffers, XYWH,
-				base->name, card->type, card->mana, minion->attack, minion->health, minion->numAttacks, minion->mods );
-return;
-		}
+	if ( oasis_renderLargeDevCard ) {
+		oasis_dev_render ( screenDims, glBuffers, XYWHpass, player );
+		return;
 	}
-*/
 
 	char buffer[256];
 	int slen;
@@ -201,52 +210,10 @@ return;
 
 	/// render enemy character
 	render_character ( screenDims, glBuffers, enemy, enemyCharXY );
-/*
-	sprintf ( buffer, "%d", enemy->health );
-	int slen = strlen ( buffer );
-	rect[0] = centerX ( midX, 0, glyphW, slen );
-	rect[1] = cardGap;
-	rect[2] = XYWHpass[2];
-	rect[3] = XYWHpass[3];
-
-	draw2dApi->drawCharPre ( font, colorWhite );
-	draw2dApi->drawString ( screenDims, glBuffers, rect, font, buffer );
-
-	// enemy mana
-	rect[0] += 40;
-	sprintf ( buffer, "%d / %d", enemy->mana, enemy->manaMax );
-	slen = strlen ( buffer );
-	draw2dApi->drawCharPre ( font, colorDBlue );
-	draw2dApi->drawString ( screenDims, glBuffers, rect, font, buffer );
-*/
-
-
-
-
 
 
 	// player character
 	render_character ( screenDims, glBuffers, player, playerCharXY );
-/*
-	sprintf ( buffer, "%d", player->health );
-	slen = strlen ( buffer );
-	rect[0] = centerX ( midX, 0, glyphW, slen );
-	slen = strlen ( buffer );
-	rect[1] = XYWHpass[3] - cardGap - font->atlasInfo.glyphH;
-
-	draw2dApi->drawCharPre ( font, colorWhite );
-	draw2dApi->drawString ( screenDims, glBuffers, rect, font, buffer );
-
-	rect[0] += 40;
-
-	// player mana
-	sprintf ( buffer, "%d / %d", player->mana, player->manaMax );
-	slen = strlen ( buffer );
-//	rect[1] = XYWHpass[3] - cardGap - font->atlasInfo.glyphH;
-
-	draw2dApi->drawCharPre ( font, colorDBlue );
-	draw2dApi->drawString ( screenDims, glBuffers, rect, font, buffer );
-*/
 
 
 	int card[4];
@@ -579,7 +546,7 @@ void oasis_card_render_base ( int *screenDims, GLuint *glBuffers, int *XYWHpass,
 	float w = 20;
 
 	// put a blue circle behind this...
-	draw2dApi->fillCircle ( XYWH, w, colorDBlue, screenDims, glBuffers );
+	draw2dApi->fillCircle ( XYWH, w, colorCyan, screenDims, glBuffers );
 	XYWH[0] -= font->atlasInfo.glyphW / 2;
 	XYWH[1] -= font->atlasInfo.glyphH / 2;
 
@@ -738,56 +705,31 @@ void oasis_card_render_large ( int *screenDims, GLuint *glBuffers, int *XYWHpass
 
 	sprintf ( buffer, "%d", mana );
 	text_in_circle ( screenDims, glBuffers, XYWH, buffer,
-		colorDBlue, colorBlack,
+		colorCyan, colorBlack,
 		font_l, circ_w );
-/*
-	// put a blue circle behind this...
-	draw2dApi->fillCircle ( XYWH, w, colorDBlue, screenDims, glBuffers );
-	XYWH[0] -= font->atlasInfo.glyphW / 2;
-	XYWH[1] -= font->atlasInfo.glyphH / 2;
-
-	draw2dApi->drawCharPre ( font, colorWhite );
-	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, buffer );
-*/
 
 	if ( type == 0 ) {
 		// minion
 
-	// attack
-	XYWH[0] = XYWHpass[0] + 2;
-	XYWH[1] = XYWHpass[1] + cardH - 2;
+		// attack
+		XYWH[0] = XYWHpass[0] + 2;
+		XYWH[1] = XYWHpass[1] + cardH - 2;
 
-	sprintf ( buffer, "%d", attack );
-	text_in_circle ( screenDims, glBuffers, XYWH, buffer,
-		colorDYellow, colorBlack,
-		font_l, circ_w );
-/*
-	draw2dApi->fillCircle ( XYWH, w, colorDYellow, screenDims, glBuffers );
-	XYWH[0] -= font->atlasInfo.glyphW / 2;
-	XYWH[1] -= font->atlasInfo.glyphH / 2;
-
-	draw2dApi->drawCharPre ( font, colorWhite );
-	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, buffer );
-*/
+		sprintf ( buffer, "%d", attack );
+		text_in_circle ( screenDims, glBuffers, XYWH, buffer,
+			colorDYellow, colorBlack,
+			font_l, circ_w );
 
 
 
-	// health
-	XYWH[0] = XYWHpass[0] + cardW - 2;
-	XYWH[1] = XYWHpass[1] + cardH - 2;
+		// health
+		XYWH[0] = XYWHpass[0] + cardW - 2;
+		XYWH[1] = XYWHpass[1] + cardH - 2;
 
-	sprintf ( buffer, "%d", health );
-	text_in_circle ( screenDims, glBuffers, XYWH, buffer,
-		colorDRed, colorBlack,
-		font_l, circ_w );
-/*
-	draw2dApi->fillCircle ( XYWH, w, colorDRed, screenDims, glBuffers );
-	XYWH[0] -= font->atlasInfo.glyphW / 2;
-	XYWH[1] -= font->atlasInfo.glyphH / 2;
-
-	draw2dApi->drawCharPre ( font, colorWhite );
-	draw2dApi->drawString ( screenDims, glBuffers, XYWH, font, buffer );
-*/
+		sprintf ( buffer, "%d", health );
+		text_in_circle ( screenDims, glBuffers, XYWH, buffer,
+			colorDRed, colorBlack,
+			font_l, circ_w );
 	}
 
 

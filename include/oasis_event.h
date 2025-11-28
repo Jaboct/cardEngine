@@ -27,10 +27,11 @@ struct spellEffect;
 
 /// spell enums
 
+// target->side
 enum target_side {
-	tar_aly = 0,
-	tar_enemy,
-	tar_either,
+	tarS_ally = 0,
+	tarS_enemy,
+	tarS_either,
 };
 
 enum target_count {
@@ -74,6 +75,13 @@ enum spell_discard_type {
 };
 
 
+enum board_types {
+	board_allyChamp = 0,
+	board_allyMin,
+	board_enemyChamp,
+	board_enemyMin,
+};
+
 
 // should i have a union of this stuff.
 
@@ -89,6 +97,9 @@ int get_clickZone ( int *clickXYpass, int *fullBoard );
 
 // doesnt simply return the index, it also makes sure a minion exists there.
 int board_click_index ( struct player *player, int *clickXY, int *boardXYWH );
+
+// used when one of my cards is selected, and i want to 
+void click_enemy_board ( struct player *player, struct player *enemy, int handI, int board, int clickZone );
 
 // for for the player only.
 //void play_hand_to_board ( struct player *player, int handI, int clickZone );
@@ -107,6 +118,11 @@ int play_spell ( struct card *card, int board, int clickZone );
 // board: 0 is enemy, 1 is player.
 void apply_spell_minion ( struct spell *spell, struct card *minion );
 void apply_spellEffect_minion ( struct spellEffect *eff, struct card *minion );
+
+
+void apply_spell_champ ( struct spell *spell, struct player *player );
+void apply_spellEffect_champ ( struct spellEffect *eff, struct player *player );
+
 
 // i am removing card at arr[i], so shift everything at an index above that, left by 1.
 // make sure the final arr[index] is set to null.

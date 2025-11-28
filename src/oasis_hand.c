@@ -324,7 +324,7 @@ printf ( "APPLY TAUNT\n" );
 	arrayListAddEndPointer ( spell->effList, eff );
 	strcpy ( spell->modName, "PW: Shield" );
 
-	tar->side = tar_aly;
+	tar->side = tarS_ally;
 	tar->who = tar_minion;
 	tar->count = target_num + 0;	// casts on 1+0 guy(s)
 
@@ -345,7 +345,7 @@ printf ( "APPLY TAUNT\n" );
 	spell->discard = discard_shuf_playDeck;
 
 	tar = spell->tar;
-	tar->side = tar_aly;
+	tar->side = tarS_ally;
 	tar->who = tar_minion;
 	tar->count = target_num + 0;	// casts on 1+0 guy(s)
 
@@ -360,11 +360,54 @@ printf ( "APPLY TAUNT\n" );
 	eff->heal = 2;
 
 
+	/// Torch
 	base = make_cardBase_spell ( "Torch" );
 	base->card->mana = 1;
 
+	spell = base->card->spell;
+	// leave it as empty so that nothing gets added.
+//	strcpy ( spell->modName, "Hat: +2/+2" );
+	spell->discard = discard_shuf_playDeck;
+
+	tar = spell->tar;
+	tar->side = tarS_enemy;
+	tar->who = tar_both;
+	tar->count = target_num + 0;	// casts on 1+0 guy(s)
+
+	eff = spellEffectInit ( );
+	arrayListAddEndPointer ( spell->effList, eff );
+	eff->type = eff_dmg;
+	eff->dmg = 2;
+
+
+	/// Journal
 	base = make_cardBase_spell ( "Journal" );
 	base->card->mana = 1;
+
+
+
+	/// Fireball (champ ability)
+	/// TODO, this is a fake card, which should really be a champion ability.
+	// 2 dmg to anyone, 2 mana cost.
+	base = make_cardBase_spell ( "Fireball" );
+	base->card->mana = 2;
+
+	spell = base->card->spell;
+	// leave it as empty so that nothing gets added.
+//	strcpy ( spell->modName, "Hat: +2/+2" );
+	spell->discard = discard_shuf_playDeck;
+
+	tar = spell->tar;
+	tar->side = tarS_enemy;
+	tar->who = tar_both;
+	tar->count = target_num + 0;	// casts on 1+0 guy(s)
+
+	eff = spellEffectInit ( );
+	arrayListAddEndPointer ( spell->effList, eff );
+	eff->type = eff_dmg;
+	eff->dmg = 2;
+
+
 
 
 	hand_pick3_char ( );

@@ -86,7 +86,7 @@ struct targeting {
 
 struct spellEffect {
 	int type;
-	int heal;
+	int heal;	// i dpmt see the need to have heal and dmg, just have, ammount
 	int dmg;
 };
 

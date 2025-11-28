@@ -94,6 +94,27 @@ play_hand_to_board ( )<br>
 	// 7 is AOE all (minions and champs)
 	// 8 is AOE all enemies (minions and champ)
 	// 9 is AOE all allies (minions and champ)
+
+
+enum target_side {
+	tar_ally = 0,
+	tar_enemy,
+	tar_either,
+};
+
+enum target_count {
+	target_everyone = 0,
+	target_num, // to hit 1 person, do = target_num, to hit 2 people, do target_num+1, do i ever want to target 0 people?
+};
+
+enum target_who {
+	tar_champ = 0,
+	tar_minion,
+	tar_both,
+	tar_rand,
+};
+
+// if i want to target the ally minions + champ, along with only enemy minions, i cant do that rn.
 </div>
 
 <br>
@@ -106,6 +127,59 @@ play_hand_to_board ( )<br>
 	// 3 is draw x cards
 	// 4 is summon a specific card / random card / pseudo random, idk.
 </div>
+
+<br>
+<br>
+
+Example:<br>
+"Hat", gives +2/+2 to a friendly minion, and is shuffled back into the deck after being played.<br>
+It will have the target:<br>
+side = aly<br>
+who = minion<br>
+it will have 2 effects, one that gives +2 atk, the other +2 hp.<br>
+Even though there are 2 effects, there is only one "modName" that will show up at the bottom of the minion card.<br>
+the discard is: discard_shuf_playDeck;<br>
+<br>
+<div class="codeBlock">	base = make_cardBase_spell ( "Hat" );
+	base-&gt;card-&gt;mana = 1;
+
+	spell = base-&gt;card-&gt;spell;
+	strcpy ( spell-&gt;modName, "Hat: +2/+2" );
+	spell-&gt;discard = discard_shuf_playDeck;
+
+	tar = spell-&gt;tar;
+	tar-&gt;side = tar_aly;
+	tar-&gt;who = tar_minion;
+	tar-&gt;count = target_num + 0;	// casts on 1+0 guy(s)
+
+	eff = spellEffectInit ( );
+	arrayListAddEndPointer ( spell-&gt;effList, eff );
+	eff-&gt;type = eff_buffHp;
+	eff-&gt;heal = 2;
+
+	eff = spellEffectInit ( );
+	arrayListAddEndPointer ( spell-&gt;effList, eff );
+	eff-&gt;type = eff_buffAtk;
+	eff-&gt;heal = 2;
+</div>
+
+<br>
+<br>
+
+<b>Pick 3</b><br>
+render_pick3 ( ) (oasis_render.c)<br>
+event_pick3 ( ) (oasis_render.c)<br>
+<br>
+renders the global var:<br>
+struct pick3 pick3[];<br>
+<br>
+pick3[] gets filled by a few specific functions.<br>
+They get called by event_pick3() after i click on the select button.<br>
+hand_pick3_char ( ) (character)<br>
+(character ability)<br>
+hand_pick3_special ( ) (special deck card)<br>
+hand_pick3_cards ( ) (3 card pack)<br>
+<br>
 
 <br>
 <br>
