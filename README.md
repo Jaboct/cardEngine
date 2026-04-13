@@ -13,10 +13,11 @@ When you have the next card for the foundation (starting at ace, raising up till
 
 Render Function:
 solitaire_render()
+
 Event Function:
 solitaire_event()
 
-![Solitaire example image](https://github.com/Jaboct/jalbSvg/releases/download/Resources/Solitaire_00.png)
+![Solitaire example image](https://github.com/Jaboct/cardEngine/releases/download/Resources/Solitaire_00.png)
 
 ## Oasis
 Oasis is a simple Hearthstone style clone, specifically a clone of "The League of Explorers" expansion.
@@ -27,17 +28,18 @@ add board / character wide passives.
 
 Render Function:
 oasis_render()
+
 Event Function:
 oasis_event()
 
-![Oasis example image](https://github.com/Jaboct/jalbSvg/releases/download/Resources/Oasis_00.png)
+![Oasis example image](https://github.com/Jaboct/cardEngine/releases/download/Resources/Oasis_00.png)
 
 # Framework
 This program is built upon a **framework** so there is no main function, instead the render and event functions are called by the framework's render and event loop.
 
 
 # Libraries
-**OpenGL** is the rendering framework called through an api
+**OpenGL** is the rendering framework called through an api.
  struct draw2dStruct \*draw2dApi;
 
 **SDL2** handles the windowing and event handling.
