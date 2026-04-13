@@ -60,8 +60,10 @@ body{
 <b>cardEngine overivew</b><br>
 
 Right now there are 2 parts of Card Engine.<br>
-stage 1: Solitaire<br>
+stage 1: Solitaire (Klondike)<br>
 stage 2: Oasis (hearthstone clone)<br>
+
+
 <br>
 <br>
 
@@ -72,7 +74,47 @@ stage 2: Oasis (hearthstone clone)<br>
 <br>
 
 <div class="myParagraph" id="oasis">
+<b>Solitaire</b><br>
+<br>
+Solitaire is a simple Klondike clone.<br>
+Click on a card to select it.<br>
+Click on the card stack in the top left to flip them over one by one.<br>
+When you have the next card for the foundation (starting at ace, raising up till king) click on the foundation pile in the bottom center to move the card there.<br>
+
+<br>
+<br>
+
+<div class="codeBlock">Render:
+solitaire_render()
+Event:
+solitaire_event()
+</div>
+
+<br>
+</div>
+
+<br>
+<br>
+
+<div class="myParagraph" id="oasis">
 <b>Oasis</b><br>
+<br>
+<br>
+
+Oasis is a simple Hearthstone style clone, specifically a clone of "The League of Explorers" expansion. <br>
+Where you construct your deck by selecting your hero, their power, starting packs, and then between each combat you:<br>
+expand you deck by adding packs of three cards,<br>
+visit the shop to modify existing cards,<br>
+add board / character wide passives.<br> 
+
+<br>
+<br>
+
+<div class="codeBlock">Render:
+oasis_render()
+Event:
+oasis_event()
+</div>
 
 <br>
 <br>

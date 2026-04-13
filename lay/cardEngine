@@ -154,7 +154,7 @@ all
 
 
 Run:
-loop	setStage	2
+loop	setStage	1
 cardEngine	fill_stock
 #cardEngine	set_debugPrint_oasisRender	1
 

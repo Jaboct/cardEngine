@@ -14,6 +14,9 @@
 
 #include <jalbDraw/jalb_draw2d_api.h>
 
+#include <jalbXml/jalbXml_02_write.h>
+#include <jalbXml/jalbXml_02_read.h>
+
 
 /** Forward Declaring */
 
